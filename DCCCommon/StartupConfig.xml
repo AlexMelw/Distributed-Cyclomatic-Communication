@@ -1,0 +1,40 @@
+﻿<?xml version="1.0"
+      encoding="utf-8"?>
+
+<configuration>
+  <client>
+    <local-ipAddress>127.0.0.1</local-ipAddress>
+    <multicast-ipAddress>224.1.2.3</multicast-ipAddress>
+    <multicast-port>27549</multicast-port>
+  </client>
+  <node id="1">
+    <local-ipAddress>127.0.0.1</local-ipAddress>
+    <multicast-ipAddress>224.1.2.3</multicast-ipAddress>
+    <multicast-port>27549</multicast-port>
+  </node>
+  <node id="2">
+    <local-ipAddress>127.0.0.1</local-ipAddress>
+    <multicast-ipAddress>224.1.2.3</multicast-ipAddress>
+    <multicast-port>27549</multicast-port>
+  </node>
+  <node id="3">
+    <local-ipAddress>127.0.0.1</local-ipAddress>
+    <multicast-ipAddress>224.1.2.3</multicast-ipAddress>
+    <multicast-port>27549</multicast-port>
+  </node>
+  <node id="4">
+    <local-ipAddress>127.0.0.1</local-ipAddress>
+    <multicast-ipAddress>224.1.2.3</multicast-ipAddress>
+    <multicast-port>27549</multicast-port>
+  </node>
+  <node id="5">
+    <local-ipAddress>127.0.0.1</local-ipAddress>
+    <multicast-ipAddress>224.1.2.3</multicast-ipAddress>
+    <multicast-port>27549</multicast-port>
+  </node>
+  <node id="6">
+    <local-ipAddress>127.0.0.1</local-ipAddress>
+    <multicast-ipAddress>224.1.2.3</multicast-ipAddress>
+    <multicast-port>27549</multicast-port>
+  </node>
+</configuration>
