@@ -4,7 +4,6 @@
     using DCCClientLib.Workers;
     using DCCDiscoveryService;
     using DCCDiscoveryService.Interfaces;
-    using DCCNodeLib;
     using DCCNodeLib.Interfaces;
     using DCCNodeLib.Workers;
     using Ninject;

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2005
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DCCClientCLI", "CCCCcli\DCCClientCLI.csproj", "{27C49954-E034-4E90-B7BF-440FDE3FD2F5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DCCClientCLI", "DCCClientCLI\DCCClientCLI.csproj", "{27C49954-E034-4E90-B7BF-440FDE3FD2F5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DCCClientLib", "CCCClientLib\DCCClientLib.csproj", "{996FADD0-C5EB-4B3F-91DF-9D2D7A6BB937}"
 EndProject
