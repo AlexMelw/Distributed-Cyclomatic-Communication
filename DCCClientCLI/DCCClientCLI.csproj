@@ -47,8 +47,9 @@
     <Compile Include="Verbs\GetVerb.cs" />
     <Compile Include="Verbs\GetXmlVerb.cs" />
     <Compile Include="Facade\Program.CommandProcessor.cs" />
-    <Compile Include="Facade\Program.cs" />
+    <Compile Include="Facade\Program.EntryPoint.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Verbs\VerbType.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

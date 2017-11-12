@@ -14,7 +14,7 @@
         {
             try
             {
-                await InitializeClientWorker(clientWorker).ConfigureAwait(false);
+                await InitializeClientWorkerAsync(clientWorker).ConfigureAwait(false);
 
                 await clientWorker.MakeRequestAsync(
                         options.DataType,
@@ -36,6 +36,11 @@
                     string response = await clientWorker.GetResponseAsync().ConfigureAwait(false);
                     await Console.Out.WriteLineAsync(response).ConfigureAwait(false);
                 }
+                else
+                {
+                    string dataType = options.VerbType == VerbType.JsonVerb ? "Json" : "Xml";
+                    await Console.Out.WriteLineAsync($"Received {dataType} is NOT valid!").ConfigureAwait(false);
+                }
             }
             finally
             {
@@ -43,10 +48,37 @@
             }
         }
 
-        private static async Task InitializeClientWorker(IDCCClientWorker clientWorker)
+        private static async Task InitializeClientWorkerAsync(IDCCClientWorker clientWorker)
         {
-            IPAddress localIpAddress = StartupConfigManager.Default
-                .GetLocalIpAddress(Client, LocalIpAddress);
+            bool discoveryIsUsed = StartupConfigManager.Default.ExistsKey(Client);
+            bool proxyIsUsed = StartupConfigManager.Default.ExistsKey(Proxy);
+
+            if (discoveryIsUsed)
+            {
+                await ConfigureWithDiscoveryServiceSettingsAsync(clientWorker).ConfigureAwait(false);
+
+                return;
+            }
+
+            if (proxyIsUsed)
+            {
+                await ConfigureWithProxyNodeSettings(clientWorker).ConfigureAwait(false);
+
+                return;
+            }
+
+            await Console.Out
+                .WriteLineAsync(
+                    "Cannot operate without a proper startup configuration. " +
+                    "Neither discovery service was configured, nor proxy.")
+                .ConfigureAwait(false);
+
+            Environment.Exit(1);
+        }
+
+        private static async Task ConfigureWithDiscoveryServiceSettingsAsync(IDCCClientWorker clientWorker)
+        {
+            IPAddress localIpAddress = StartupConfigManager.Default.GetClientLocalIpAddress();
 
             if (localIpAddress == null)
             {
@@ -57,8 +89,7 @@
                 Environment.Exit(1);
             }
 
-            IPEndPoint multicastIpEndPoint = StartupConfigManager.Default
-                .GetMulticastIPEndPoint(Client);
+            IPEndPoint multicastIpEndPoint = StartupConfigManager.Default.GetDiscoveryClientMulticastIPEndPoint();
 
             if (multicastIpEndPoint == null)
             {
@@ -69,8 +100,25 @@
                 Environment.Exit(1);
             }
 
+            int responseTcpPort = StartupConfigManager.Default.GetDiscoveryClientResponseTcpPort();
+
+            if (responseTcpPort == -1)
+            {
+                await Console.Out
+                    .WriteLineAsync("Discovery response TCP port is not indicated within configuration file.")
+                    .ConfigureAwait(false);
+
+                Environment.Exit(1);
+            }
+
+            clientWorker.ResponseTcpPort = responseTcpPort;
             clientWorker.LocalIpAddress = localIpAddress;
             clientWorker.MulticastIPEndPoint = multicastIpEndPoint;
+        }
+
+        private static Task ConfigureWithProxyNodeSettings(IDCCClientWorker clientWorker)
+        {
+            throw new NotImplementedException();
         }
     }
 }

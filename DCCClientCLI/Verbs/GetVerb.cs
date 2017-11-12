@@ -19,5 +19,7 @@
         [Option('s', "schema", Required = false,
             HelpText = "Schema file to validate data against.")]
         public string SchemaPath { get; set; }
+
+        public VerbType VerbType { get; set; }
     }
 }

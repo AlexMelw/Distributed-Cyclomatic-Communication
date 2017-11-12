@@ -11,25 +11,22 @@
     {
         private static void ProcessGetXmlCommand(GetXmlVerb options)
         {
-            Task.Run((Action) (() =>
+            Task.Run((Action) (async () =>
             {
-                var clientWorker = IoC.Resolve<IDCCXmlClientWorker>();
+                IDCCClientWorker clientWorker = IoC.Resolve<IDCCXmlClientWorker>();
 
-                ProcessOutgoingRequestAsync(options, clientWorker).ConfigureAwait(false);
-
+                await ProcessOutgoingRequestAsync(options, clientWorker).ConfigureAwait(false);
             })).Wait();
         }
 
         private static void ProcessGetJsonCommand(GetJsonVerb options)
         {
-            Task.Run((Action)(() =>
+            Task.Run((Action) (async () =>
             {
-                var clientWorker = IoC.Resolve<IDCCXmlClientWorker>();
+                IDCCClientWorker clientWorker = IoC.Resolve<IDCCJsonClientWorker>();
 
-                ProcessOutgoingRequestAsync(options, clientWorker).ConfigureAwait(false);
-
+                await ProcessOutgoingRequestAsync(options, clientWorker).ConfigureAwait(false);
             })).Wait();
-
         }
     }
 }

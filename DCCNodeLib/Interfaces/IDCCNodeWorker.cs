@@ -8,6 +8,7 @@
     {
         IPAddress LocalIpAddress { get; set; }
         IPEndPoint MulticastIPEndPoint { get; set; }
+        int TcpServingPort { get; set; }
         Task StartAsync();
     }
 }

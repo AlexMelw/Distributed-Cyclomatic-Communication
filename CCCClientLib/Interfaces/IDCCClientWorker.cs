@@ -11,5 +11,6 @@
         Task<string> GetResponseAsync();
         IPAddress LocalIpAddress { get; set; }
         IPEndPoint MulticastIPEndPoint { get; set; }
+        int ResponseTcpPort { get; set; }
     }
 }

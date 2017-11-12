@@ -9,10 +9,7 @@
     {
         public DiscoveryService() { }
 
-        public Task<IPEndPoint> GetMavenEndPointAsync()
-        {
-            
-        }
+        public Task<IPEndPoint> GetMavenEndPointAsync() { }
 
         public void Dispose() { }
     }

@@ -27,7 +27,6 @@
                         await InitializeNodeWorkerAsync(nodeWorker, options.Id).ConfigureAwait(false);
 
                         await nodeWorker.StartAsync().ConfigureAwait(false);
-
                     })).Wait();
                 });
         }

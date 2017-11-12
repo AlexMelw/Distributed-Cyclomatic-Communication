@@ -3,5 +3,8 @@
     using CommandLine;
 
     [Verb("get-xml", HelpText = "Retrieves xml from ...")]
-    class GetXmlVerb : GetVerb { }
+    class GetXmlVerb : GetVerb
+    {
+        public GetXmlVerb() => VerbType = VerbType.XmlVerb;
+    }
 }

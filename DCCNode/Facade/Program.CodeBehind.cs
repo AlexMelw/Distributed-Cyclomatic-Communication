@@ -6,13 +6,14 @@
     using DCCCommon;
     using DCCCommon.Conventions;
     using DCCNodeLib.Interfaces;
+    using static DCCCommon.Conventions.Common;
 
     partial class Program
     {
         private static async Task InitializeNodeWorkerAsync(IDCCNodeWorker nodeWorker, int id)
         {
             IPAddress localIpAddress = StartupConfigManager.Default
-                .GetLocalIpAddress(Common.Node, Common.LocalIpAddress, id);
+                .GetLocalIpAddress(Node, LocalIpAddress, id);
 
             if (localIpAddress == null)
             {
@@ -24,7 +25,7 @@
             }
 
             IPEndPoint multicastIpEndPoint = StartupConfigManager.Default
-                .GetMulticastIPEndPoint(Common.Node, id);
+                .GetMulticastIPEndPoint(Node, id);
 
             if (multicastIpEndPoint == null)
             {
@@ -35,6 +36,19 @@
                 Environment.Exit(1);
             }
 
+            int tcpServingPort = StartupConfigManager.Default
+                .GetTcpServingPort(Common.Node, Common.TcpServingPort, id);
+
+            if (tcpServingPort == -1)
+            {
+                await Console.Out
+                    .WriteLineAsync("TCP serving port is not found in the configuration file.")
+                    .ConfigureAwait(false);
+
+                Environment.Exit(1);
+            }
+
+            nodeWorker.TcpServingPort = tcpServingPort;
             nodeWorker.LocalIpAddress = localIpAddress;
             nodeWorker.MulticastIPEndPoint = multicastIpEndPoint;
         }
