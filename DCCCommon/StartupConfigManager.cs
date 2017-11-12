@@ -1,10 +1,10 @@
 ﻿namespace DCCCommon
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Net;
     using System.Xml.Linq;
-    using Conventions;
     using static Conventions.Common;
 
     public class StartupConfigManager
@@ -194,12 +194,10 @@
 
             try
             {
+                XElement node = GetNodeById(nodeId);
+
                 lock (PadLock)
                 {
-                    XElement root = XElement.Load(ConfigFilePath);
-
-                    XElement node = GetNodeById(nodeId);
-
                     localIpAddressString = node?.Element(LocalIpAddress)?.Value
                                            ?? string.Empty;
                 }
@@ -220,10 +218,10 @@
 
             try
             {
+                XElement node = GetNodeById(nodeId);
+
                 lock (PadLock)
                 {
-                    XElement node = GetNodeById(nodeId);
-
                     tcpServingPortString = node?.Element(TcpServingPort)?.Value
                                            ?? string.Empty;
                 }
@@ -247,14 +245,45 @@
             return tcpServingPort;
         }
 
-        private static XElement GetNodeById(int nodeId)
+        public IEnumerable<IPEndPoint> GetAdjacentNodesEndPoints(int nodeId)
         {
-            XElement root = XElement.Load(ConfigFilePath);
+            var remoteNodesEndPoints = new LinkedList<IPEndPoint>();
 
-            XElement node = root.Descendants(Node)
-                ?.FirstOrDefault(elem => nodeId.ToString().Equals(elem.Attribute(Id)?.Value));
+            try
+            {
+                IEnumerable<XElement> adjacentNodes = GetAdjacentNodes(nodeId);
 
-            return node;
+                lock (PadLock)
+                {
+                    foreach (XElement adjacentNode in adjacentNodes)
+                    {
+                        string remoteIpAddressString = adjacentNode?.Element(RemoteIpAddress)?.Value
+                                                       ?? string.Empty;
+
+                        string remotePortString = adjacentNode?.Element(RemotePort)?.Value
+                                                  ?? string.Empty;
+
+                        try
+                        {
+                            var ipEndPoint = new IPEndPoint(
+                                IPAddress.Parse(remoteIpAddressString),
+                                int.Parse(remotePortString));
+
+                            remoteNodesEndPoints.AddLast(ipEndPoint);
+                        }
+                        catch (Exception)
+                        {
+                            // ignored
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            return remoteNodesEndPoints;
         }
 
         public IPEndPoint GetNodeMulticastIPEndPoint(int nodeId)
@@ -264,10 +293,10 @@
 
             try
             {
+                XElement node = GetNodeById(nodeId);
+
                 lock (PadLock)
                 {
-                    XElement node = GetNodeById(nodeId);
-
                     multicastIpAddressString = node?.Element(MulticastIpAddress)?.Value
                                                ?? string.Empty;
 
@@ -294,6 +323,35 @@
             }
 
             return multicastIpEndPoint;
+        }
+
+        private static IEnumerable<XElement> GetAdjacentNodes(int nodeId)
+        {
+            IEnumerable<XElement> adjacentNodes;
+
+            XElement node = GetNodeById(nodeId);
+
+            lock (PadLock)
+            {
+                adjacentNodes = node?.Element(AdjacentNodes)?.Descendants(RemoteNode);
+            }
+
+            return adjacentNodes;
+        }
+
+        private static XElement GetNodeById(int nodeId)
+        {
+            XElement node;
+
+            lock (PadLock)
+            {
+                XElement root = XElement.Load(ConfigFilePath);
+
+                node = root?.Descendants(Node)
+                    ?.FirstOrDefault(elem => nodeId.ToString().Equals(elem.Attribute(Id)?.Value));
+            }
+
+            return node;
         }
 
         #endregion

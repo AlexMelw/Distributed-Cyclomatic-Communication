@@ -19,6 +19,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NHelpers", "..\EasySharp\NH
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DCCNodeLib", "DCCNodeLib\DCCNodeLib.csproj", "{21EDE020-EB9B-416B-9967-56AEA5B1EA2B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DCCCommonTests", "DCCCommonTests\DCCCommonTests.csproj", "{0EFA66DF-0ADA-4D68-8995-10F47632EE8F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C65ED9E1-CA98-4F91-AE18-A8E95C1E45D8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,9 +61,16 @@ Global
 		{21EDE020-EB9B-416B-9967-56AEA5B1EA2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21EDE020-EB9B-416B-9967-56AEA5B1EA2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{21EDE020-EB9B-416B-9967-56AEA5B1EA2B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0EFA66DF-0ADA-4D68-8995-10F47632EE8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EFA66DF-0ADA-4D68-8995-10F47632EE8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EFA66DF-0ADA-4D68-8995-10F47632EE8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EFA66DF-0ADA-4D68-8995-10F47632EE8F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0EFA66DF-0ADA-4D68-8995-10F47632EE8F} = {C65ED9E1-CA98-4F91-AE18-A8E95C1E45D8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EB757475-3311-407C-91A0-0D35CA24A94F}
