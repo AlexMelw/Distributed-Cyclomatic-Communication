@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Net;
     using System.Xml.Linq;
@@ -9,20 +10,32 @@
 
     public class StartupConfigManager
     {
-        private const string ConfigFilePath = "StartupConfig.xml";
-
         private static readonly object PadLock = new object();
 
         private static readonly Lazy<StartupConfigManager> LazyInstance =
             new Lazy<StartupConfigManager>(() => new StartupConfigManager(), true);
+        //private const string ConfigFilePath = "StartupConfig.xml";
+
+        public string ConfigFilePath { get; set; }
 
         public static StartupConfigManager Default => LazyInstance.Value;
 
         #region CONSTRUCTORS
 
-        protected StartupConfigManager() { }
+        private StartupConfigManager()
+        {
+            var startupConfigPath = GetStartupConfigPath();
+            ConfigFilePath = startupConfigPath;
+        }
 
         #endregion
+
+        private static string GetStartupConfigPath()
+        {
+            string executingPath = AppDomain.CurrentDomain.BaseDirectory;
+            string startupConfigPath = Path.Combine(executingPath, StartupConfigFileName);
+            return startupConfigPath;
+        }
 
         #region Client Related
 
@@ -138,7 +151,7 @@
 
                     tcpPortString = root.Element(Client)
                                         ?.Element(Proxy)
-                                        ?.Element(ResponseTcpPort)
+                                        ?.Element(RemotePort)
                                         ?.Value
                                     ?? string.Empty;
                 }
@@ -212,7 +225,7 @@
             return localIpAddress;
         }
 
-        public int GetTcpServingPort(int nodeId)
+        public int GetNodeTcpServingPort(int nodeId)
         {
             string tcpServingPortString = string.Empty;
 
@@ -325,7 +338,7 @@
             return multicastIpEndPoint;
         }
 
-        private static IEnumerable<XElement> GetAdjacentNodes(int nodeId)
+        private IEnumerable<XElement> GetAdjacentNodes(int nodeId)
         {
             IEnumerable<XElement> adjacentNodes;
 
@@ -339,7 +352,7 @@
             return adjacentNodes;
         }
 
-        private static XElement GetNodeById(int nodeId)
+        private XElement GetNodeById(int nodeId)
         {
             XElement node;
 

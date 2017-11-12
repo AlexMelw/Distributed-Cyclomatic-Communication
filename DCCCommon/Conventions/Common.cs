@@ -1,12 +1,22 @@
 ﻿namespace DCCCommon.Conventions
 {
-    using System.Xml.Linq;
-
     public static class Common
     {
+        #region ConfigName
+
+        public const string StartupConfigFileName = "StartupConfig.xml";
+
+        #endregion
+
         #region Client
 
         public const string Client = "client";
+
+        #endregion
+
+        #region Proxy
+
+        public const string Proxy = "proxy";
 
         #endregion
 
@@ -16,12 +26,6 @@
         public const string ResponseTcpPort = "response-tcpPort";
         public const string MulticastIpAddress = "multicast-ipAddress";
         public const string MulticastPort = "multicast-port";
-
-        #endregion
-
-        #region Proxy
-
-        public const string Proxy = "proxy";
 
         #endregion
 

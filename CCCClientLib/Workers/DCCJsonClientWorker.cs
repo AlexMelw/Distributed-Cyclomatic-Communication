@@ -10,6 +10,7 @@
         public IPAddress LocalIpAddress { get; set; }
 
         public IPEndPoint MulticastIPEndPoint { get; set; }
+        public int ResponseTcpPort { get; set; }
 
         public void Dispose()
         {

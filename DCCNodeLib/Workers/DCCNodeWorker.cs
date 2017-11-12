@@ -1,5 +1,6 @@
 ﻿namespace DCCNodeLib.Workers
 {
+    using System;
     using System.Net;
     using System.Threading.Tasks;
     using Interfaces;
@@ -10,10 +11,14 @@
 
         public IPEndPoint MulticastIPEndPoint { get; set; }
 
+        public int TcpServingPort { get; set; }
+
         public Task StartAsync()
         {
-            StartListeningToMulticastPortAsync();
-            StartListeningToTcpServingPortAsync();
+            //StartListeningToMulticastPortAsync();
+            //StartListeningToTcpServingPortAsync();
+
+            throw new NotImplementedException();
         }
 
         private Task StartListeningToMulticastPortAsync()
@@ -22,6 +27,8 @@
             //{
 
             //}
+
+            throw new NotImplementedException();
         }
 
         private Task StartListeningToTcpServingPortAsync()
@@ -30,6 +37,8 @@
             //{
 
             //}
+
+            throw new NotImplementedException();
         }
 
         public void Dispose() { }

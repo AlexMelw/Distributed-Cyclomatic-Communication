@@ -12,6 +12,7 @@
         public IPAddress LocalIpAddress { get; set; }
 
         public IPEndPoint MulticastIPEndPoint { get; set; }
+        public int ResponseTcpPort { get; set; }
 
         [Inject]
         public IDiscoveryService DiscoveryService { get; set; }

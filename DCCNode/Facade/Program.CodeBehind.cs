@@ -12,45 +12,47 @@
     {
         private static async Task InitializeNodeWorkerAsync(IDCCNodeWorker nodeWorker, int id)
         {
-            IPAddress localIpAddress = StartupConfigManager.Default
-                .GetLocalIpAddress(Node, LocalIpAddress, id);
+            //IPAddress localIpAddress = StartupConfigManager.Default
+            //    .GetLocalIpAddress(Node, LocalIpAddress, id);
 
-            if (localIpAddress == null)
-            {
-                await Console.Out
-                    .WriteLineAsync("Local IP Address is not found in the configuration file.")
-                    .ConfigureAwait(false);
+            //if (localIpAddress == null)
+            //{
+            //    await Console.Out
+            //        .WriteLineAsync("Local IP Address is not found in the configuration file.")
+            //        .ConfigureAwait(false);
 
-                Environment.Exit(1);
-            }
+            //    Environment.Exit(1);
+            //}
 
-            IPEndPoint multicastIpEndPoint = StartupConfigManager.Default
-                .GetMulticastIPEndPoint(Node, id);
+            //IPEndPoint multicastIpEndPoint = StartupConfigManager.Default
+            //    .GetMulticastIPEndPoint(Node, id);
 
-            if (multicastIpEndPoint == null)
-            {
-                await Console.Out
-                    .WriteLineAsync("Multicast IP Address and port are not found in the configuration file.")
-                    .ConfigureAwait(false);
+            //if (multicastIpEndPoint == null)
+            //{
+            //    await Console.Out
+            //        .WriteLineAsync("Multicast IP Address and port are not found in the configuration file.")
+            //        .ConfigureAwait(false);
 
-                Environment.Exit(1);
-            }
+            //    Environment.Exit(1);
+            //}
 
-            int tcpServingPort = StartupConfigManager.Default
-                .GetTcpServingPort(Common.Node, Common.TcpServingPort, id);
+            //int tcpServingPort = StartupConfigManager.Default
+            //    .GetTcpServingPort(Common.Node, Common.TcpServingPort, id);
 
-            if (tcpServingPort == -1)
-            {
-                await Console.Out
-                    .WriteLineAsync("TCP serving port is not found in the configuration file.")
-                    .ConfigureAwait(false);
+            //if (tcpServingPort == -1)
+            //{
+            //    await Console.Out
+            //        .WriteLineAsync("TCP serving port is not found in the configuration file.")
+            //        .ConfigureAwait(false);
 
-                Environment.Exit(1);
-            }
+            //    Environment.Exit(1);
+            //}
 
-            nodeWorker.TcpServingPort = tcpServingPort;
-            nodeWorker.LocalIpAddress = localIpAddress;
-            nodeWorker.MulticastIPEndPoint = multicastIpEndPoint;
+            //nodeWorker.TcpServingPort = tcpServingPort;
+            //nodeWorker.LocalIpAddress = localIpAddress;
+            //nodeWorker.MulticastIPEndPoint = multicastIpEndPoint;
+
+            throw new NotImplementedException();
         }
     }
 }

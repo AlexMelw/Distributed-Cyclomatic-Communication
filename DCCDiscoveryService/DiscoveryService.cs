@@ -9,7 +9,10 @@
     {
         public DiscoveryService() { }
 
-        public Task<IPEndPoint> GetMavenEndPointAsync() { }
+        public Task<IPEndPoint> GetMavenEndPointAsync()
+        {
+            throw new NotImplementedException();
+        }
 
         public void Dispose() { }
     }
