@@ -1,14 +1,11 @@
 ﻿namespace DCCClientLib.Mediators
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
     using System.Net;
     using System.Net.Sockets;
-    using System.Runtime.CompilerServices;
-    using System.Text;
     using System.Threading.Tasks;
     using DCCCommon.Conventions;
     using DCCCommon.Messages;
@@ -33,6 +30,60 @@
         }
 
         #endregion
+
+        public async Task<string> MakeRequestAsync(RequestDataMessage requestMessage)
+        {
+            IPEndPoint mavenEndPoint = await GetMavenEndPointAsync().ConfigureAwait(false);
+
+            string data = await RetrieveDataFromMavenAsync(mavenEndPoint, requestMessage).ConfigureAwait(false);
+
+            return data;
+        }
+
+        public void Dispose() { }
+
+        private async Task<string> RetrieveDataFromMavenAsync(IPEndPoint mavenEndPoint,
+            RequestDataMessage requestMessage)
+        {
+            var transport = new TcpClient();
+            await transport.ConnectAsync(mavenEndPoint.Address, mavenEndPoint.Port).ConfigureAwait(false);
+
+            NetworkStream networkStream = transport.GetStream();
+
+            string requestMessageXml = requestMessage.SerializeToXml();
+            byte[] dataToBeSent = requestMessageXml.ToUtf8EncodedByteArray();
+
+            //var streamReader = new StreamReader(networkStream, Encoding.UTF8);
+            //var streamWriter = new StreamWriter(networkStream, Encoding.UTF8) { AutoFlush = true };
+            //await streamWriter.WriteAsync(requestMessageXml).ConfigureAwait(false);
+
+            await networkStream.WriteAsync(dataToBeSent, 0, dataToBeSent.Length).ConfigureAwait(false);
+
+            byte[] buffer = new byte[Common.BufferSize];
+            int bytesRead = await networkStream.ReadAsync(buffer, 0, Common.BufferSize).ConfigureAwait(false);
+
+            int payloadSize = BitConverter.ToInt32(buffer.Take(bytesRead).ToArray(), 0);
+
+            LinkedList<IEnumerable<byte>> receivedDataChunks = new LinkedList<IEnumerable<byte>>();
+
+            while (payloadSize > 0)
+            {
+                bytesRead = await networkStream.ReadAsync(buffer, 0, Common.BufferSize).ConfigureAwait(false);
+
+                receivedDataChunks.AddLast(buffer.Take(bytesRead));
+
+                payloadSize -= payloadSize;
+            }
+
+            byte[] receivedData = receivedDataChunks.SelectMany(chunk => chunk).ToArray();
+
+            string data = receivedData.ToUtf8String();
+
+            //streamReader.Close();
+            //streamWriter.Close();
+
+            return data;
+        }
 
         private async Task<DiscoveryResponseMessage> HandleResponseAsync(
             TcpListenerEx tcpListener, TcpClient worker)
@@ -97,7 +148,6 @@
             //    _server.Stop();
             //    Console.Out.WriteLine(" [TCP] SERVER HALTED");
             //}
-            
 
             #endregion
 
@@ -112,22 +162,6 @@
 
             return responseMessage;
         }
-
-        public async Task<string> MakeRequestAsync(RequestDataMessage requestMessage)
-        {
-            IPEndPoint mavenEndPoint = await GetMavenEndPointAsync().ConfigureAwait(false);
-
-            string data = await RetrieveDataFromMaven(mavenEndPoint, requestMessage).ConfigureAwait(false);
-
-            return data;
-        }
-
-        private Task<string> RetrieveDataFromMaven(IPEndPoint mavenEndPoint, RequestDataMessage requestMessage)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Dispose() { }
 
         private async Task<IPEndPoint> GetMavenEndPointAsync()
         {
@@ -220,7 +254,6 @@
                 }
 
 
-
                 foreach (Task<DiscoveryResponseMessage> handlerTask in responseHandlers)
                 {
                     if (!handlerTask.IsCompleted)
@@ -233,8 +266,6 @@
 
                     discoveryResponseMessages.AddLast(discoveryResponseMessage);
                 }
-
-
             }
             catch (Exception e)
             {
@@ -254,6 +285,7 @@
                     tcpListener.Stop();
                 }
             }
+
             #endregion
 
             #region Discovery Processs Reqponse
