@@ -230,7 +230,7 @@
                         break;
                     }
 
-                    TcpClient tcpClient = await tcpListener.AcceptTcpClientAsync().ConfigureAwait(false);
+                    TcpClient tcpClient = tcpListener.AcceptTcpClient();
 
                     Console.WriteLine($" [TCP] Connection accepted from: {{ {tcpClient.Client.RemoteEndPoint} }}");
                     Console.WriteLine($" [TCP] SoketWorker is bound to: {{ {tcpClient.Client.LocalEndPoint} }}");
@@ -249,7 +249,11 @@
 
                     #endregion
 
-                    var responseHandlerTask = Task.Run(() => HandleResponseAsync(tcpListener, tcpClient));
+                    Task<DiscoveryResponseMessage> responseHandlerTask = Task.Run(() =>
+                    {
+                        return HandleResponseAsync(tcpListener, tcpClient);
+                    });
+
                     responseHandlers.AddLast(responseHandlerTask);
                 }
 
