@@ -2,7 +2,7 @@
 {
     enum VerbType
     {
-        XmlVerb,
-        JsonVerb
+        Xml,
+        Json
     }
 }

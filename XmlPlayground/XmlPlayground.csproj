@@ -4,15 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{EB231EEE-CD0B-4480-A922-E20F97CBCEDD}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DCCCommon</RootNamespace>
-    <AssemblyName>DCCCommon</AssemblyName>
+    <ProjectGuid>{F02B1CDF-1AAA-4710-9005-48F1C937343C}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>XmlPlayground</RootNamespace>
+    <AssemblyName>XmlPlayground</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -20,9 +21,9 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -41,17 +42,35 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Conventions\Common.cs" />
-    <Compile Include="Entities\Employee.cs" />
-    <Compile Include="Messages\RequestDataMessage.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StartupConfigManager.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="StartupConfig.xml">
-      <SubType>Designer</SubType>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Employees.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\EasySharp\NHelpers\NHelpers.csproj">
+      <Project>{CAC83CF1-E5D4-45F6-85CC-E0AD29B55A8E}</Project>
+      <Name>NHelpers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DCCCommon\DCCCommon.csproj">
+      <Project>{EB231EEE-CD0B-4480-A922-E20F97CBCEDD}</Project>
+      <Name>DCCCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DCCNodeLib\DCCNodeLib.csproj">
+      <Project>{21EDE020-EB9B-416B-9967-56AEA5B1EA2B}</Project>
+      <Name>DCCNodeLib</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Linq.Dynamic">
+      <Version>1.0.7</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

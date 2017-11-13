@@ -24,8 +24,7 @@
 
         private StartupConfigManager()
         {
-            var startupConfigPath = GetStartupConfigPath();
-            ConfigFilePath = startupConfigPath;
+            ConfigFilePath = GetStartupConfigPath();
         }
 
         #endregion

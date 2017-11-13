@@ -40,9 +40,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DSL\DSLInterpreter.cs" />
+    <Compile Include="LocalStorageManager.cs" />
+    <Compile Include="Steps.cs" />
     <Compile Include="Workers\DCCNodeWorker.cs" />
     <Compile Include="Interfaces\IDCCNodeWorker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DCCCommon\DCCCommon.csproj">
+      <Project>{EB231EEE-CD0B-4480-A922-E20F97CBCEDD}</Project>
+      <Name>DCCCommon</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Linq.Dynamic">
+      <Version>1.0.7</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

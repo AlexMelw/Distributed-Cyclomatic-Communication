@@ -40,12 +40,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Workers\DCCClientWorker.cs" />
     <Compile Include="Workers\DCCJsonClientWorker.cs" />
     <Compile Include="Workers\DCCXmlClientWorker.cs" />
     <Compile Include="Interfaces\IDCCClientWorker.cs" />
     <Compile Include="Interfaces\IDCCJsonClientWorker.cs" />
     <Compile Include="Interfaces\IDCCXmlClientWorker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Mediators\DiscoveryBasedCommunicationMediator.cs" />
+    <Compile Include="Interfaces\ICommunicationMediator.cs" />
+    <Compile Include="Mediators\ProxyBasedCommunicationMediator.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DCCDiscoveryService\DCCDiscoveryService.csproj">

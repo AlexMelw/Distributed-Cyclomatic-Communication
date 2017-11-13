@@ -4,6 +4,7 @@
     using System.Net;
     using System.Threading.Tasks;
     using DCCClientLib.Interfaces;
+    using DCCClientLib.Mediators;
     using DCCCommon;
     using Verbs;
     using static DCCCommon.Conventions.Common;
@@ -38,7 +39,7 @@
                 }
                 else
                 {
-                    string dataType = options.VerbType == VerbType.JsonVerb ? "Json" : "Xml";
+                    string dataType = options.VerbType.ToString();
                     await Console.Out.WriteLineAsync($"Received {dataType} is NOT valid!").ConfigureAwait(false);
                 }
             }
@@ -47,6 +48,8 @@
                 clientWorker.Dispose();
             }
         }
+
+        #region Client Worker Initialization
 
         private static async Task InitializeClientWorkerAsync(IDCCClientWorker clientWorker)
         {
@@ -75,6 +78,10 @@
 
             Environment.Exit(1);
         }
+
+        #endregion
+
+        #region Client Worker Configuration
 
         private static async Task ConfigureWithDiscoveryServiceSettingsAsync(IDCCClientWorker clientWorker)
         {
@@ -111,14 +118,58 @@
                 Environment.Exit(1);
             }
 
-            clientWorker.ResponseTcpPort = responseTcpPort;
-            clientWorker.LocalIpAddress = localIpAddress;
-            clientWorker.MulticastIPEndPoint = multicastIpEndPoint;
+            clientWorker.CommunicationMediator = new DiscoveryBasedCommunicationMediator
+            {
+                ClientLocalIpAddress = localIpAddress,
+                MulticastIPEndPoint = multicastIpEndPoint,
+                ClientReceiveResponseTcpPort = responseTcpPort
+            };
         }
 
-        private static Task ConfigureWithProxyNodeSettings(IDCCClientWorker clientWorker)
+        private static async Task ConfigureWithProxyNodeSettings(IDCCClientWorker clientWorker)
         {
-            throw new NotImplementedException();
+            IPAddress localIpAddress = StartupConfigManager.Default.GetClientLocalIpAddress();
+
+            if (localIpAddress == null)
+            {
+                await Console.Out
+                    .WriteLineAsync("Local IP Address is not found in the configuration file.")
+                    .ConfigureAwait(false);
+
+                Environment.Exit(1);
+            }
+
+            int responseTcpPort = StartupConfigManager.Default.GetDiscoveryClientResponseTcpPort();
+
+            if (responseTcpPort == -1)
+            {
+                await Console.Out
+                    .WriteLineAsync("Discovery response TCP port is not indicated within configuration file.")
+                    .ConfigureAwait(false);
+
+                Environment.Exit(1);
+            }
+
+            IPEndPoint proxyEndPoint = StartupConfigManager.Default.GetProxyEndPoint();
+
+            if (proxyEndPoint == null)
+            {
+                await Console.Out
+                    .WriteLineAsync("Proxy IP Address and/or port are not found in the configuration file.")
+                    .ConfigureAwait(false);
+
+                Environment.Exit(1);
+            }
+
+
+            clientWorker.CommunicationMediator = new ProxyBasedCommunicationMediator
+            {
+                ClientLocalIpAddress = localIpAddress,
+                ClientReceiveResponseTcpPort = responseTcpPort,
+                ProxyEndPoint = proxyEndPoint
+            };
         }
+
+        #endregion
     }
 }
