@@ -7,7 +7,7 @@
     public interface IDCCClientWorker : IDisposable
     {
         ICommunicationMediator CommunicationMediator { get; set; }
-        Task<bool> ValidateResponseAgainstSchemaAsync(string xmlSchemaPath);
+        Task<bool> ValidateResponseAgainstSchemaAsync(string schemaPath);
         Task MakeRequestAsync(string dataType, string filterCondition, string orderingCondition);
         Task<string> GetResponseAsync();
     }

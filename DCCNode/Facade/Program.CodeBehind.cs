@@ -10,7 +10,7 @@
 
     partial class Program
     {
-        private static async Task InitializeNodeWorkerAsync(IDCCNodeWorker nodeWorker, int id)
+        private static Task InitializeNodeWorkerAsync(IDCCNodeWorker nodeWorker, int id)
         {
             //IPAddress localIpAddress = StartupConfigManager.Default
             //    .GetLocalIpAddress(Node, LocalIpAddress, id);

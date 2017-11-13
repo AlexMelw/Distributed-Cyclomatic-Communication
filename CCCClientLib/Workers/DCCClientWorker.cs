@@ -3,10 +3,12 @@
     using System;
     using System.Net;
     using System.Threading.Tasks;
+    using DCCCommon.Messages;
     using Interfaces;
 
-    public class DCCClientWorker : IDCCClientWorker
+    public abstract class DCCClientWorker : IDCCClientWorker
     {
+        protected string ReceivedData;
         public IPAddress LocalIpAddress { get; set; }
         public int ResponseTcpPort { get; set; }
 
@@ -14,15 +16,19 @@
 
         public ICommunicationMediator CommunicationMediator { get; set; }
 
+        public abstract Task<bool> ValidateResponseAgainstSchemaAsync(string schemaPath);
 
-        public virtual Task<bool> ValidateResponseAgainstSchemaAsync(string xmlSchemaPath)
+        public async Task MakeRequestAsync(string dataType, string filterCondition, string orderingCondition)
         {
-            throw new NotImplementedException();
-        }
+            var requestMessage = new RequestDataMessage
+            {
+                Propagation = 1,
+                DataType = dataType,
+                FilterCondition = filterCondition,
+                OrderingCondition = orderingCondition
+            };
 
-        public Task MakeRequestAsync(string dataType, string filterCondition, string orderingCondition)
-        {
-            throw new NotImplementedException();
+            ReceivedData = await CommunicationMediator.MakeRequestAsync(requestMessage).ConfigureAwait(false);
         }
 
         public Task<string> GetResponseAsync()

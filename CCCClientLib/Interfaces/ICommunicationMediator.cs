@@ -1,9 +1,10 @@
 ﻿namespace DCCClientLib.Interfaces
 {
     using System.Threading.Tasks;
+    using DCCCommon.Messages;
 
     public interface ICommunicationMediator
     {
-        Task MakeRequestAsync(string dataType, string filterCondition, string orderingCondition);
+        Task<string> MakeRequestAsync(RequestDataMessage requestMessage);
     }
 }

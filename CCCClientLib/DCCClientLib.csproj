@@ -40,6 +40,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Schemas\Employees.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Employees.xsd</DependentUpon>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
     <Compile Include="Workers\DCCClientWorker.cs" />
     <Compile Include="Workers\DCCJsonClientWorker.cs" />
     <Compile Include="Workers\DCCXmlClientWorker.cs" />
@@ -52,15 +58,41 @@
     <Compile Include="Mediators\ProxyBasedCommunicationMediator.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DCCCommon\DCCCommon.csproj">
+      <Project>{EB231EEE-CD0B-4480-A922-E20F97CBCEDD}</Project>
+      <Name>DCCCommon</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DCCDiscoveryService\DCCDiscoveryService.csproj">
       <Project>{4B864947-BB12-41F4-85D6-B47C57A435D3}</Project>
       <Name>DCCDiscoveryService</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json.Schema">
+      <Version>3.0.4</Version>
+    </PackageReference>
     <PackageReference Include="Ninject">
       <Version>3.3.3</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Schemas\Employees.xsc">
+      <DependentUpon>Employees.xsd</DependentUpon>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Schemas\Employees.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>Employees.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Schemas\Employees.xss">
+      <DependentUpon>Employees.xsd</DependentUpon>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Schemas\EmployeesSchema.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
