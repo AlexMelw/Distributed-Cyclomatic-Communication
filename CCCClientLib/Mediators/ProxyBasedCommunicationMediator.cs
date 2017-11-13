@@ -16,5 +16,10 @@
         {
             throw new NotImplementedException();
         }
+
+        public void Dispose()
+        {
+            
+        }
     }
 }

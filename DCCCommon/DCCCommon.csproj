@@ -45,7 +45,7 @@
     <Compile Include="Entities\Employee.cs" />
     <Compile Include="Messages\MulticastDiscoveryRequestMessage.cs" />
     <Compile Include="Messages\RequestDataMessage.cs" />
-    <Compile Include="Messages\UnicastDiscoveryResponseMessage.cs" />
+    <Compile Include="Messages\DiscoveryResponseMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StartupConfigManager.cs" />
   </ItemGroup>

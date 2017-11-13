@@ -9,10 +9,6 @@
     public abstract class DCCClientWorker : IDCCClientWorker
     {
         protected string ReceivedData;
-        public IPAddress LocalIpAddress { get; set; }
-        public int ResponseTcpPort { get; set; }
-
-        public IPEndPoint MulticastIPEndPoint { get; set; }
 
         public ICommunicationMediator CommunicationMediator { get; set; }
 
@@ -33,6 +29,14 @@
 
         public Task<string> GetResponseAsync() => Task.FromResult(ReceivedData);
 
-        public void Dispose() { }
+        public void Dispose() => CommunicationMediator.Dispose();
+
+        #region Not Used Properties
+
+        //public IPAddress LocalIpAddress { get; set; }
+        //public int ResponseTcpPort { get; set; }
+        //public IPEndPoint MulticastIPEndPoint { get; set; }
+
+        #endregion
     }
 }

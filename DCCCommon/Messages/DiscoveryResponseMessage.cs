@@ -1,6 +1,6 @@
 ﻿namespace DCCDiscoveryService.Messages
 {
-    public class UnicastDiscoveryResponseMessage
+    public class DiscoveryResponseMessage
     {
         public int ListeningPort { get; set; }
         public string IPAddress { get; set; }

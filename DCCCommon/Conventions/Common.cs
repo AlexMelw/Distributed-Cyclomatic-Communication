@@ -2,6 +2,8 @@
 {
     public static class Common
     {
+        public const int BufferSize = 4096;
+
         #region ConfigName
 
         public const string StartupConfigFileName = "StartupConfig.xml";

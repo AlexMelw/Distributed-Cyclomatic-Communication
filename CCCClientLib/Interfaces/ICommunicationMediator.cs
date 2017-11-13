@@ -6,5 +6,6 @@
     public interface ICommunicationMediator
     {
         Task<string> MakeRequestAsync(RequestDataMessage requestMessage);
+        void Dispose();
     }
 }
