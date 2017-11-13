@@ -31,10 +31,7 @@
             ReceivedData = await CommunicationMediator.MakeRequestAsync(requestMessage).ConfigureAwait(false);
         }
 
-        public Task<string> GetResponseAsync()
-        {
-            throw new NotImplementedException();
-        }
+        public Task<string> GetResponseAsync() => Task.FromResult(ReceivedData);
 
         public void Dispose() { }
     }

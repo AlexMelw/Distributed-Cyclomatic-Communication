@@ -2,8 +2,6 @@
 {
     using DCCClientLib.Interfaces;
     using DCCClientLib.Workers;
-    using DCCDiscoveryService;
-    using DCCDiscoveryService.Interfaces;
     using DCCNodeLib.Interfaces;
     using DCCNodeLib.Workers;
     using Ninject;
@@ -14,9 +12,6 @@
 
         public static void RegisterAll()
         {
-            Kernel.Bind<IDiscoveryService>()
-                .To<DiscoveryService>();
-
             Kernel.Bind<IDCCXmlClientWorker>()
                 .To<DCCXmlClientWorker>();
 

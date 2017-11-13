@@ -59,10 +59,6 @@
       <Project>{EB231EEE-CD0B-4480-A922-E20F97CBCEDD}</Project>
       <Name>DCCCommon</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DCCDiscoveryService\DCCDiscoveryService.csproj">
-      <Project>{4B864947-BB12-41F4-85D6-B47C57A435D3}</Project>
-      <Name>DCCDiscoveryService</Name>
-    </ProjectReference>
     <ProjectReference Include="..\DCCNodeLib\DCCNodeLib.csproj">
       <Project>{21EDE020-EB9B-416B-9967-56AEA5B1EA2B}</Project>
       <Name>DCCNodeLib</Name>

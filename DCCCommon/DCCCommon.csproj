@@ -43,7 +43,9 @@
   <ItemGroup>
     <Compile Include="Conventions\Common.cs" />
     <Compile Include="Entities\Employee.cs" />
+    <Compile Include="Messages\MulticastDiscoveryRequestMessage.cs" />
     <Compile Include="Messages\RequestDataMessage.cs" />
+    <Compile Include="Messages\UnicastDiscoveryResponseMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StartupConfigManager.cs" />
   </ItemGroup>
@@ -52,6 +54,12 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\EasySharp\NHelpers\NHelpers.csproj">
+      <Project>{CAC83CF1-E5D4-45F6-85CC-E0AD29B55A8E}</Project>
+      <Name>NHelpers</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

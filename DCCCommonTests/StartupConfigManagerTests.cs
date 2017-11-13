@@ -3,14 +3,13 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using System.Net;
-    using System.Reflection;
-    using Conventions;
+    using DCCCommon;
+    using DCCCommon.Conventions;
     using NUnit.Framework;
 
     [TestFixture]
-    public class StartupConfigManagerTests
+    public class StartupConfigManagerTestExTests
     {
         private static string GetStartupConfigPath()
         {
@@ -28,10 +27,10 @@
             string filePath = GetStartupConfigPath();
             var testIpAddress = IPAddress.Parse("127.0.0.1");
 
-            StartupConfigManager.Default.ConfigFilePath = filePath;
+            StartupConfigManagerTestEx.Default.ConfigFilePath = filePath;
 
             // Act
-            IPAddress nodeLocalIpAddress = StartupConfigManager.Default
+            IPAddress nodeLocalIpAddress = StartupConfigManagerTestEx.Default
                 .GetNodeLocalIpAddress(nodeId);
 
             // Assert
@@ -45,10 +44,10 @@
             string filePath = GetStartupConfigPath();
             int testTcpServingPort = 28001;
 
-            StartupConfigManager.Default.ConfigFilePath = filePath;
+            StartupConfigManagerTestEx.Default.ConfigFilePath = filePath;
 
             // Act
-            int tcpServingPort = StartupConfigManager.Default
+            int tcpServingPort = StartupConfigManagerTestEx.Default
                 .GetNodeTcpServingPort(nodeId);
 
             // Assert
@@ -62,10 +61,10 @@
             string filePath = GetStartupConfigPath();
             var testIpEndPoint = new IPEndPoint(IPAddress.Parse("224.1.2.3"), 27549);
 
-            StartupConfigManager.Default.ConfigFilePath = filePath;
+            StartupConfigManagerTestEx.Default.ConfigFilePath = filePath;
 
             // Act
-            IPEndPoint nodeMulticastIpEndPoint = StartupConfigManager.Default
+            IPEndPoint nodeMulticastIpEndPoint = StartupConfigManagerTestEx.Default
                 .GetNodeMulticastIPEndPoint(nodeId);
 
             // Assert
@@ -83,10 +82,10 @@
                 new IPEndPoint(IPAddress.Parse("127.0.0.1"), 28002)
             };
 
-            StartupConfigManager.Default.ConfigFilePath = filePath;
+            StartupConfigManagerTestEx.Default.ConfigFilePath = filePath;
 
             // Act
-            IEnumerable<IPEndPoint> adjacentNodesEndPoints = StartupConfigManager.Default
+            IEnumerable<IPEndPoint> adjacentNodesEndPoints = StartupConfigManagerTestEx.Default
                 .GetAdjacentNodesEndPoints(nodeId);
 
             // Assert
@@ -96,6 +95,8 @@
         #endregion
 
 
+        #region Client Related Tests
+
         [Test]
         public void GetClientLocalIpAddressTest()
         {
@@ -103,10 +104,10 @@
             string filePath = GetStartupConfigPath();
             var testClientLocalIpAddress = IPAddress.Parse("127.0.0.1");
 
-            StartupConfigManager.Default.ConfigFilePath = filePath;
+            StartupConfigManagerTestEx.Default.ConfigFilePath = filePath;
 
             // Act
-            IPAddress clientLocalIpAddress = StartupConfigManager.Default
+            IPAddress clientLocalIpAddress = StartupConfigManagerTestEx.Default
                 .GetClientLocalIpAddress();
 
             // Assert
@@ -120,10 +121,10 @@
             string filePath = GetStartupConfigPath();
             int testDiscoveryResponseTcpPort = 27001;
 
-            StartupConfigManager.Default.ConfigFilePath = filePath;
+            StartupConfigManagerTestEx.Default.ConfigFilePath = filePath;
 
             // Act
-            int discoveryClientResponseTcpPort = StartupConfigManager.Default
+            int discoveryClientResponseTcpPort = StartupConfigManagerTestEx.Default
                 .GetDiscoveryClientResponseTcpPort();
 
             // Assert
@@ -138,10 +139,10 @@
             IPEndPoint testDiscoveryClientMulticastIpEndPoint =
                 new IPEndPoint(IPAddress.Parse("224.1.2.3"), 27549);
 
-            StartupConfigManager.Default.ConfigFilePath = filePath;
+            StartupConfigManagerTestEx.Default.ConfigFilePath = filePath;
 
             // Act
-            IPEndPoint discoveryClientMulticastIpEndPoint = StartupConfigManager.Default
+            IPEndPoint discoveryClientMulticastIpEndPoint = StartupConfigManagerTestEx.Default
                 .GetDiscoveryClientMulticastIPEndPoint();
 
             // Assert
@@ -155,10 +156,10 @@
             string filePath = GetStartupConfigPath();
             var testProxyIpEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 30000);
 
-            StartupConfigManager.Default.ConfigFilePath = filePath;
+            StartupConfigManagerTestEx.Default.ConfigFilePath = filePath;
 
             // Act
-            IPEndPoint proxyEndPoint = StartupConfigManager.Default
+            IPEndPoint proxyEndPoint = StartupConfigManagerTestEx.Default
                 .GetProxyEndPoint();
 
             // Assert
@@ -170,13 +171,13 @@
         {
             // Arrange
             string filePath = GetStartupConfigPath();
-            StartupConfigManager.Default.ConfigFilePath = filePath;
+            StartupConfigManagerTestEx.Default.ConfigFilePath = filePath;
 
             // Act
-            bool existsKeyDiscovery = StartupConfigManager.Default
+            bool existsKeyDiscovery = StartupConfigManagerTestEx.Default
                 .ExistsKey(Common.Discovery);
 
-            bool existsKeyProxy = StartupConfigManager.Default
+            bool existsKeyProxy = StartupConfigManagerTestEx.Default
                 .ExistsKey(Common.Proxy);
 
             Console.Out.WriteLine("existsKeyDiscovery = {0}", existsKeyDiscovery);
@@ -185,5 +186,48 @@
             // Assert
             Assert.That(new[] { existsKeyProxy, existsKeyDiscovery }, Has.Some.EqualTo(true));
         }
+
+        [Test]
+        public void GetProxyConnectedNodesEndPointsTest()
+        {
+            // Arrange
+            string startupConfigPath = GetStartupConfigPath();
+            StartupConfigManagerTestEx.Default.ConfigFilePath = startupConfigPath;
+            List<IPEndPoint> testConnectedNodesEndPoints = new List<IPEndPoint>
+            {
+                new IPEndPoint(IPAddress.Parse("127.0.0.1"), 28006),
+                new IPEndPoint(IPAddress.Parse("127.0.0.1"), 28005),
+                new IPEndPoint(IPAddress.Parse("127.0.0.1"), 28004),
+                new IPEndPoint(IPAddress.Parse("127.0.0.1"), 28003),
+                new IPEndPoint(IPAddress.Parse("127.0.0.1"), 28002),
+                new IPEndPoint(IPAddress.Parse("127.0.0.1"), 28001),
+            };
+
+            // Act
+            IEnumerable<IPEndPoint> proxyConnectedNodesEndPoints = StartupConfigManagerTestEx.Default
+                .GetProxyConnectedNodesEndPoints();
+
+            // Assert
+            Assert.That(proxyConnectedNodesEndPoints, Is.EquivalentTo(testConnectedNodesEndPoints));
+        }
+
+        #endregion
     }
+
+    class StartupConfigManagerTestEx : StartupConfigManager
+    {
+        private static readonly Lazy<StartupConfigManagerTestEx> LazyInstance =
+            new Lazy<StartupConfigManagerTestEx>(() => new StartupConfigManagerTestEx(), true);
+
+        public new static StartupConfigManagerTestEx Default => LazyInstance.Value;
+
+        private StartupConfigManagerTestEx() { }
+
+        public new string ConfigFilePath
+        {
+            get => base.ConfigFilePath;
+            set => base.ConfigFilePath = value;
+        }
+    }
+
 }

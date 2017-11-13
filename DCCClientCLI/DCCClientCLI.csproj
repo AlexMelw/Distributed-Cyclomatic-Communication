@@ -72,10 +72,6 @@
       <Project>{EB231EEE-CD0B-4480-A922-E20F97CBCEDD}</Project>
       <Name>DCCCommon</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DCCDiscoveryService\DCCDiscoveryService.csproj">
-      <Project>{4B864947-BB12-41F4-85D6-B47C57A435D3}</Project>
-      <Name>DCCDiscoveryService</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
       <Project>{C78D7A61-B426-488D-B0ED-C47AB406941D}</Project>
       <Name>Infrastructure</Name>

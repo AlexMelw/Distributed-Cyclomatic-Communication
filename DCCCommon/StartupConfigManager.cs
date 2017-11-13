@@ -6,6 +6,7 @@
     using System.Linq;
     using System.Net;
     using System.Xml.Linq;
+    using EasySharp.NHelpers.CustomExMethods;
     using static Conventions.Common;
 
     public class StartupConfigManager
@@ -16,13 +17,13 @@
             new Lazy<StartupConfigManager>(() => new StartupConfigManager(), true);
         //private const string ConfigFilePath = "StartupConfig.xml";
 
-        public string ConfigFilePath { get; set; }
+        protected string ConfigFilePath { get; set; }
 
         public static StartupConfigManager Default => LazyInstance.Value;
 
         #region CONSTRUCTORS
 
-        private StartupConfigManager()
+        protected StartupConfigManager()
         {
             ConfigFilePath = GetStartupConfigPath();
         }
@@ -37,6 +38,37 @@
         }
 
         #region Client Related
+
+        public IEnumerable<IPEndPoint> GetProxyConnectedNodesEndPoints()
+        {
+            LinkedList<IPEndPoint> connectedNodesEndPoints = new LinkedList<IPEndPoint>();
+
+            lock (PadLock)
+            {
+                XElement root = XElement.Load(ConfigFilePath);
+
+                foreach (XElement node in root.Descendants(Node))
+                {
+                    try
+                    {
+                        string nodeIpAddressString = node.Element(LocalIpAddress).Value;
+
+                        IPAddress nodeIpAddress = IPAddress.Parse(nodeIpAddressString);
+                        int nodeTcpServingPort = node.Element(TcpServingPort).GetAs<int>(-1);
+
+                        var nodeEndPoint = new IPEndPoint(nodeIpAddress, nodeTcpServingPort);
+
+                        connectedNodesEndPoints.AddLast(nodeEndPoint);
+                    }
+                    catch (Exception)
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+            return connectedNodesEndPoints;
+        }
 
         public IPAddress GetClientLocalIpAddress()
         {
