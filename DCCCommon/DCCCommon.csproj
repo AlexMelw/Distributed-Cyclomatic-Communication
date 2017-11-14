@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Conventions\Common.cs" />
+    <Compile Include="DataAgent.cs" />
     <Compile Include="Entities\Employee.cs" />
     <Compile Include="Messages\MulticastDiscoveryRequestMessage.cs" />
     <Compile Include="Messages\RequestDataMessage.cs" />

@@ -1,10 +1,20 @@
 ﻿namespace DCCNodeLib.Workers
 {
     using System;
+    using System.CodeDom.Compiler;
     using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Linq;
     using System.Net;
+    using System.Net.Sockets;
     using System.Threading.Tasks;
     using DCCCommon;
+    using DCCCommon.Conventions;
+    using DCCCommon.Entities;
+    using DCCCommon.Messages;
+    using DCCDiscoveryService.Messages;
+    using EasySharp.NHelpers.CustomExMethods;
+    using EasySharp.NHelpers.CustomWrappers.Networking;
     using Interfaces;
 
     public class DCCNodeWorker : IDCCNodeWorker
@@ -14,12 +24,14 @@
         public int TcpServingPort { get; set; }
         public IEnumerable<IPEndPoint> AdjacentNodesEndPoints { get; set; }
 
-        public Task StartAsync()
+        public async Task StartAsync()
         {
-            //StartListeningToMulticastPortAsync();
-            //StartListeningToTcpServingPortAsync();
+            Task MulticastListenerTask = Task.Run(StartListeningToMulticastPortAsync);
 
-            throw new NotImplementedException();
+            Task TcpListenerTask = Task.Run(StartListeningToTcpServingPortAsync);
+
+            //Task.WaitAll(MulticastListenerTask, TcpListenerTask);
+            await Task.WhenAll(MulticastListenerTask, TcpListenerTask).ConfigureAwait(false);
         }
 
         public async Task InitAsync(int nodeId)
@@ -70,26 +82,240 @@
             AdjacentNodesEndPoints = adjacentNodesEndPoints;
         }
 
-        private Task StartListeningToMulticastPortAsync()
+        private async Task StartListeningToMulticastPortAsync()
         {
-            //while (true)
-            //{
+            #region Multicast Socket Initialization
 
-            //}
+            Socket mCastSocket = new Socket(
+                AddressFamily.InterNetwork,
+                SocketType.Dgram,
+                ProtocolType.Udp);
 
-            throw new NotImplementedException();
+            var localEndPoint = new IPEndPoint(LocalIpAddress, MulticastIPEndPoint.Port);
+
+            mCastSocket.Bind(localEndPoint);
+
+            mCastSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership,
+                new MulticastOption(MulticastIPEndPoint.Address, LocalIpAddress));
+
+            #endregion
+
+
+            // To be put below the while loop
+            //mCastSocket.Close(300);
+
+            EndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            byte[] buffer = new byte[8192];
+
+            while (true)
+            {
+                await Console.Out.WriteLineAsync("Waiting for multicast packets...").ConfigureAwait(false);
+                await Console.Out.WriteLineAsync("Enter ^C to terminate").ConfigureAwait(false);
+
+                int bytesRead = mCastSocket.ReceiveFrom(buffer, ref remoteEndPoint);
+
+                await ProcessMulticastMessageAsync(buffer, bytesRead).ConfigureAwait(false);
+            }
         }
 
-        private Task StartListeningToTcpServingPortAsync()
+        private async Task ProcessMulticastMessageAsync(byte[] messageBuffer, int bytesRead)
         {
-            //while (true)
-            //{
+            string xmlMessage = messageBuffer.Take(bytesRead).ToArray().ToUtf8String();
 
-            //}
+            var requestMessage = xmlMessage.DeserializeTo<MulticastDiscoveryRequestMessage>();
 
-            throw new NotImplementedException();
+            var responseAgent = new ResponseAgent();
+
+            var responseMessage = new DiscoveryResponseMessage
+            {
+                IPAddress = LocalIpAddress.ToString(),
+                ListeningPort = TcpServingPort,
+                NodeConnectionNum = AdjacentNodesEndPoints.Count()
+            };
+
+            var clientIpAddress = IPAddress.Parse(responseMessage.IPAddress);
+            int clientListeningPort = requestMessage.ListeningPort;
+
+            await responseAgent.SendDiscoveryResponseAsync(responseMessage, clientIpAddress, clientListeningPort)
+                .ConfigureAwait(false);
         }
+
+        private async Task StartListeningToTcpServingPortAsync()
+        {
+            //var discoveryResponseMessages = new LinkedList<DiscoveryResponseMessage>();
+
+            var tcpListener = new TcpListenerEx(IPAddress.Any, TcpServingPort);
+
+            try
+            {
+                tcpListener.Start();
+
+                Console.WriteLine(" [TCP] The local End point is  :" + tcpListener.LocalEndpoint);
+                Console.WriteLine(" [TCP] Waiting for a connection.....\n");
+
+                //var timeout = TimeSpan.FromSeconds(30);
+                //DateTime listeningStartTime = DateTime.Now;
+
+                //var responseHandlers = new LinkedList<Task<DiscoveryResponseMessage>>();
+
+                while (true) // is serving continuously
+                {
+                    //if (DateTime.Now.Subtract(listeningStartTime) >= timeout)
+                    //{
+                    //    // No more accept responses from DIS nodes
+                    //    break;
+                    //}
+
+                    TcpClient tcpClient = tcpListener.AcceptTcpClient();
+
+                    Console.WriteLine($" [TCP] Connection accepted from: {{ {tcpClient.Client.RemoteEndPoint} }}");
+                    Console.WriteLine($" [TCP] SoketWorker is bound to: {{ {tcpClient.Client.LocalEndPoint} }}");
+
+                    #region Trash
+
+                    //TcpServerWorker.Instance
+                    //    .Init(workerTcpSocket, tcpListener)
+                    //    .StartWorking();
+
+                    //// TODO Unchecked modification
+                    //if (tcpListener.Inactive)
+                    //{
+                    //    tcpListener.Stop();
+                    //}
+
+                    #endregion
+
+                    //Task<DiscoveryResponseMessage> responseHandlerTask = Task.Run(() =>
+                    //{
+                    //    return HandleResponseAsync(tcpListener, tcpClient);
+                    //});
+
+                    //responseHandlers.AddLast(responseHandlerTask);
+
+                    Task.Run(() => HandleRequestAsync(tcpListener, tcpClient));
+                }
+
+
+                //foreach (Task<DiscoveryResponseMessage> handlerTask in responseHandlers)
+                //{
+                //    if (!handlerTask.IsCompleted)
+                //    {
+                //        // We do not care about the tasks that didn't get the job done
+                //        continue;
+                //    }
+
+                //    DiscoveryResponseMessage discoveryResponseMessage = await handlerTask.ConfigureAwait(false);
+
+                //    discoveryResponseMessages.AddLast(discoveryResponseMessage);
+                //}
+            }
+            catch (Exception e)
+            {
+                Console.Out.WriteLine("[TCP] Grave error occured. Searver is dead.");
+                Console.Out.WriteLine($"e = {e.Message}");
+                Debug.WriteLine("[TCP] Grave error occured. Searver is dead.");
+                Debug.WriteLine($"e = {e.Message}");
+                Console.Out.WriteLine("[TCP] PRESS ANY KEY TO QUIT");
+                Console.ReadLine();
+
+                //throw; // TODO Unchecked modification
+            }
+            finally
+            {
+                if (tcpListener.Active)
+                {
+                    tcpListener.Stop();
+                }
+            }
+        }
+
+        private async Task HandleRequestAsync(TcpListenerEx tcpListener, TcpClient tcpWorker)
+        {
+            await Console.Out.WriteLineAsync(
+                    $" [TCP]   >> SERVER WORKER IS TALKING TO {tcpWorker.Client.RemoteEndPoint}")
+                .ConfigureAwait(false);
+
+            LinkedList<IEnumerable<byte>> receivedBinaryData = new LinkedList<IEnumerable<byte>>();
+
+            while (true)
+            {
+                if (tcpListener.Inactive)
+                {
+                    break;
+                }
+
+                byte[] buffer = new byte[Common.BufferSize];
+
+                NetworkStream networkStream = tcpWorker.GetStream();
+
+                int receivedBytes = await networkStream
+                    .ReadAsync(buffer, 0, buffer.Length)
+                    .ConfigureAwait(false);
+
+                if (receivedBytes == 0)
+                {
+                    await Console.Out.WriteLineAsync(
+                            $@" [TCP]   >> SERVER WORKER says: ""No bytes received. Connection closed.""")
+                        .ConfigureAwait(false);
+
+                    break;
+                }
+
+                receivedBinaryData.AddLast(buffer.Take(receivedBytes));
+            }
+
+            tcpWorker.Close();
+
+            byte[] binaryMessage = receivedBinaryData.SelectMany(batch => batch).ToArray();
+
+            string xmlMessage = binaryMessage.ToUtf8String();
+
+            var requestDataMessage = xmlMessage.DeserializeTo<RequestDataMessage>();
+
+
+
+            var employees = new List<Employee>();
+
+            var dataAgentRequestTasks = new LinkedList<Task<string>>();
+
+            if (requestDataMessage.Propagation > 0)
+            {
+                // Message Retransmission
+                requestDataMessage.Propagation = 0;
+                requestDataMessage.DataFormat = Common.Xml;
+
+                var dataAgent = new DataAgent();
+                Task<string> dataRequestTask = dataAgent.MakeRequestAsync(requestDataMessage);
+
+                dataAgentRequestTasks.AddLast(dataRequestTask);
+            }
+
+            while (dataAgentRequestTasks.Count > 0)
+            {
+                foreach (Task<string> dataRequestTask in dataAgentRequestTasks)
+                {
+                    // Identify the first task that completes.
+                    Task<string> firstCompletedTask = await Task.WhenAny(dataAgentRequestTasks).ConfigureAwait(false);
+
+                    // Remove the selected task from the list so that you don't 
+                    // process it more than once.
+                    dataAgentRequestTasks.Remove(firstCompletedTask);
+
+                    // Await the completed task.
+                    string xmlData = await firstCompletedTask.ConfigureAwait(false);
+
+                    var employeesContainer = xmlData.DeserializeTo<EmployeesRoot>();
+
+                    employees.AddRange(employeesContainer.EmployeeArray);
+                }
+            }
+
+
+        }
+
 
         public void Dispose() { }
     }
+
+
 }

@@ -86,9 +86,11 @@
         }
 
         private async Task<DiscoveryResponseMessage> HandleResponseAsync(
-            TcpListenerEx tcpListener, TcpClient worker)
+            TcpListenerEx tcpListener, TcpClient tcpWorker)
         {
-            Console.Out.WriteLine($" [TCP]   >> SERVER WORKER IS TALKING TO {worker.Client.RemoteEndPoint}");
+            await Console.Out.WriteLineAsync(
+                    $" [TCP]   >> SERVER WORKER IS TALKING TO {tcpWorker.Client.RemoteEndPoint}")
+                .ConfigureAwait(false);
 
             LinkedList<IEnumerable<byte>> receivedBinaryData = new LinkedList<IEnumerable<byte>>();
 
@@ -103,13 +105,13 @@
 
                 //int receivedBytes = workerTcpSocket.Receive(buffer);
 
-                NetworkStream networkStream = worker.GetStream();
+                NetworkStream networkStream = tcpWorker.GetStream();
 
                 int receivedBytes = await networkStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
 
                 if (receivedBytes == 0)
                 {
-                    worker.Close();
+                    tcpWorker.Close();
 
                     Console.Out.WriteLine(
                         $@" [TCP]   >> SERVER WORKER says: ""No bytes received. Connection closed.""");
@@ -139,7 +141,7 @@
                 #endregion
             }
 
-            worker.Close();
+            tcpWorker.Close();
 
             #region Trash
 
@@ -151,7 +153,7 @@
 
             #endregion
 
-            byte[] data = receivedBinaryData.SelectMany(buffPart => buffPart).ToArray();
+            byte[] data = receivedBinaryData.SelectMany(batch => batch).ToArray();
 
             string xmlData = data.ToUtf8String();
 

@@ -48,5 +48,12 @@
         public const string RemoteNode = "remote-node";
 
         #endregion
+
+        #region Data Format
+
+        public const string Xml = "XML";
+        public const string Json = "JSON";
+
+        #endregion
     }
 }

@@ -1,17 +1,11 @@
 ﻿namespace XmlPlayground
 {
     using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Linq.Dynamic;
-    using DCCCommon.Entities;
-    using DCCNodeLib;
-    using EasySharp.NHelpers.CustomExMethods;
+    using System.Threading.Tasks;
 
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             //IEnumerable<Employee> employees = LocalStorageManager.Default.GetEmployees();
 
