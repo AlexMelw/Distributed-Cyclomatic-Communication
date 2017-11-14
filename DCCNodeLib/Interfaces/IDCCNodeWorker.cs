@@ -5,7 +5,7 @@
     using System.Net;
     using System.Threading.Tasks;
 
-    public interface IDCCNodeWorker : IDisposable
+    public interface IDCCNodeWorker
     {
         IPAddress LocalIpAddress { get; set; }
         IPEndPoint MulticastIPEndPoint { get; set; }

@@ -329,6 +329,6 @@
             tcpWorker.Close();
         }
 
-        public void Dispose() { }
+        //public void Dispose() { }
     }
 }

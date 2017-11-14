@@ -32,7 +32,7 @@
 
         public Task<string> GetResponseAsync() => Task.FromResult(ReceivedData);
 
-        public void Dispose() => CommunicationMediator.Dispose();
+        //public void Dispose() => CommunicationMediator.Dispose();
 
         #region Client Worker Initialization
 

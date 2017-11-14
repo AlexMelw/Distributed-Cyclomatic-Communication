@@ -4,7 +4,7 @@
     using System.Net;
     using System.Threading.Tasks;
 
-    public interface IDCCClientWorker : IDisposable
+    public interface IDCCClientWorker
     {
         ICommunicationMediator CommunicationMediator { get; set; }
         Task<bool> ValidateResponseAgainstSchemaAsync(string schemaPath);

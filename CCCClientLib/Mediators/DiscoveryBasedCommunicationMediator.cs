@@ -6,6 +6,7 @@
     using System.Linq;
     using System.Net;
     using System.Net.Sockets;
+    using System.Security.Cryptography;
     using System.Threading.Tasks;
     using DCCCommon.Conventions;
     using DCCCommon.Messages;
@@ -161,94 +162,8 @@
             return discoveryResponseMessages;
         }
 
-        private Task InitializeDiscoveryProcedureAsync(Socket mCastSocket)
-        {
-            var discoveryRequestMessage = new MulticastDiscoveryRequestMessage
-            {
-                IPAddress = ClientLocalIpAddress.ToString(),
-                ListeningPort = _discoveryResponsePort
-            };
-
-            // Send multicast packets to the listener.
-            IPEndPoint remoteEndPoint = new IPEndPoint(MulticastIPEndPoint.Address, MulticastIPEndPoint.Port);
-
-            string xml = discoveryRequestMessage.SerializeToXml();
-            byte[] dataToBeSent = xml.ToUtf8EncodedByteArray();
-
-            mCastSocket.SendTo(dataToBeSent, remoteEndPoint);
-
-            Console.WriteLine("Initializing discovery procedure...");
-
-            mCastSocket.Close();
-
-            return Task.CompletedTask;
-        }
-
-        private Task<Socket> CreateMulticastSocketAsync()
-        {
-            var mCastSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-
-            var localEP = new IPEndPoint(ClientLocalIpAddress, 0);
-
-            // Bind this endpoint to the multicast socket.
-            mCastSocket.Bind(localEP); // bind socket to 127.0.0.1:*
-
-            // Define a MulticastOption object specifying the multicast group address and the local IP address.
-            // The multicast group address is the same as the address used by the listener.
-            var mCastOption = new MulticastOption(MulticastIPEndPoint.Address, ClientLocalIpAddress);
-
-            mCastSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, mCastOption);
-
-            return Task.FromResult(mCastSocket);
-        }
-
-        #endregion
-
-        private async Task<string> RetrieveDataFromMavenAsync(IPEndPoint mavenEndPoint,
-            RequestDataMessage requestMessage)
-        {
-            var transport = new TcpClient();
-            await transport.ConnectAsync(mavenEndPoint.Address, mavenEndPoint.Port).ConfigureAwait(false);
-
-            NetworkStream networkStream = transport.GetStream();
-
-            string requestMessageXml = requestMessage.SerializeToXml();
-            byte[] dataToBeSent = requestMessageXml.ToUtf8EncodedByteArray();
-
-            //var streamReader = new StreamReader(networkStream, Encoding.UTF8);
-            //var streamWriter = new StreamWriter(networkStream, Encoding.UTF8) { AutoFlush = true };
-            //await streamWriter.WriteAsync(requestMessageXml).ConfigureAwait(false);
-
-            await networkStream.WriteAsync(dataToBeSent, 0, dataToBeSent.Length).ConfigureAwait(false);
-
-            byte[] buffer = new byte[Common.BufferSize];
-            int bytesRead = await networkStream.ReadAsync(buffer, 0, Common.BufferSize).ConfigureAwait(false);
-
-            int payloadSize = BitConverter.ToInt32(buffer.Take(bytesRead).ToArray(), 0);
-
-            LinkedList<IEnumerable<byte>> receivedDataChunks = new LinkedList<IEnumerable<byte>>();
-
-            while (payloadSize > 0)
-            {
-                bytesRead = await networkStream.ReadAsync(buffer, 0, Common.BufferSize).ConfigureAwait(false);
-
-                receivedDataChunks.AddLast(buffer.Take(bytesRead));
-
-                payloadSize -= payloadSize;
-            }
-
-            byte[] receivedData = receivedDataChunks.SelectMany(chunk => chunk).ToArray();
-
-            string data = receivedData.ToUtf8String();
-
-            //streamReader.Close();
-            //streamWriter.Close();
-
-            return data;
-        }
-
         private async Task<DiscoveryResponseMessage> HandleResponseAsync(
-            TcpListenerEx tcpListener, TcpClient tcpWorker)
+    TcpListenerEx tcpListener, TcpClient tcpWorker)
         {
             await Console.Out.WriteLineAsync(
                     $" [TCP]   >> SERVER WORKER IS TALKING TO {tcpWorker.Client.RemoteEndPoint}")
@@ -327,6 +242,115 @@
             return responseMessage;
         }
 
-        public void Dispose() { }
+
+        private Task InitializeDiscoveryProcedureAsync(Socket mCastSocket)
+        {
+            var discoveryRequestMessage = new MulticastDiscoveryRequestMessage
+            {
+                IPAddress = ClientLocalIpAddress.ToString(),
+                ListeningPort = _discoveryResponsePort
+            };
+
+            // Send multicast packets to the listener.
+            IPEndPoint remoteEndPoint = new IPEndPoint(MulticastIPEndPoint.Address, MulticastIPEndPoint.Port);
+
+            string xml = discoveryRequestMessage.SerializeToXml();
+            byte[] dataToBeSent = xml.ToUtf8EncodedByteArray();
+
+            mCastSocket.SendTo(dataToBeSent, remoteEndPoint);
+
+            Console.WriteLine("Initializing discovery procedure...");
+
+            mCastSocket.Close();
+
+            return Task.CompletedTask;
+        }
+
+        private Task<Socket> CreateMulticastSocketAsync()
+        {
+            var mCastSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+
+            var localEP = new IPEndPoint(ClientLocalIpAddress, 0);
+
+            // Bind this endpoint to the multicast socket.
+            mCastSocket.Bind(localEP); // bind socket to 127.0.0.1:*
+
+            // Define a MulticastOption object specifying the multicast group address and the local IP address.
+            // The multicast group address is the same as the address used by the listener.
+            var mCastOption = new MulticastOption(MulticastIPEndPoint.Address, ClientLocalIpAddress);
+
+            mCastSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, mCastOption);
+
+            return Task.FromResult(mCastSocket);
+        }
+
+        #endregion
+
+        #region Download Payload Data
+
+        private async Task<string> RetrieveDataFromMavenAsync(
+            IPEndPoint mavenEndPoint, RequestDataMessage requestMessage)
+        {
+            // Establish connection to the maven node
+            var tcpClient = new TcpClient();
+            await tcpClient.ConnectAsync(mavenEndPoint.Address, mavenEndPoint.Port).ConfigureAwait(false);
+            NetworkStream networkStream = tcpClient.GetStream();
+
+            // Prepare request message to be sent
+            string requestMessageXml = requestMessage.SerializeToXml();
+            byte[] dataToBeSent = requestMessageXml.ToUtf8EncodedByteArray();
+
+            #region Trash
+
+            //var streamReader = new StreamReader(networkStream, Encoding.UTF8);
+            //var streamWriter = new StreamWriter(networkStream, Encoding.UTF8) { AutoFlush = true };
+            //await streamWriter.WriteAsync(requestMessageXml).ConfigureAwait(false);
+
+            #endregion
+
+            // Send request message
+            await networkStream.WriteAsync(dataToBeSent, 0, dataToBeSent.Length).ConfigureAwait(false);
+
+            // Receive meta-data response
+            byte[] buffer = new byte[Common.BufferSize];
+            int bytesRead = await networkStream.ReadAsync(buffer, 0, Common.BufferSize).ConfigureAwait(false);
+            int payloadSize = BitConverter.ToInt32(buffer.Take(bytesRead).ToArray(), 0);
+
+            // Get Payload Data from maven
+            string data = await RetrieveDataPayloadFromMavenAsync(payloadSize, networkStream, buffer).ConfigureAwait(false);
+
+            #region Trash
+
+            //streamReader.Close();
+            //streamWriter.Close();
+
+            #endregion
+
+            tcpClient.Close();
+
+            return data;
+        }
+
+        private async Task<string> RetrieveDataPayloadFromMavenAsync(int payloadSize, NetworkStream networkStream, byte[] buffer)
+        {
+            var receivedDataChunks = new LinkedList<IEnumerable<byte>>();
+
+            while (payloadSize > 0)
+            {
+                int bytesRead = await networkStream.ReadAsync(buffer, 0, Common.BufferSize).ConfigureAwait(false);
+
+                receivedDataChunks.AddLast(buffer.Take(bytesRead));
+
+                payloadSize -= payloadSize;
+            }
+
+            byte[] receivedData = receivedDataChunks.SelectMany(chunk => chunk).ToArray();
+
+            string data = receivedData.ToUtf8String();
+
+            return data;
+        }
+
+        #endregion
     }
 }

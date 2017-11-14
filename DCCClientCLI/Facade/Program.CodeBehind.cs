@@ -41,7 +41,7 @@
             }
             finally
             {
-                clientWorker.Dispose();
+                //clientWorker.Dispose();
             }
         }
     }
