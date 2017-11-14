@@ -1,7 +1,6 @@
 ﻿namespace DCCNodeLib.Workers
 {
     using System;
-    using System.CodeDom.Compiler;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
@@ -13,6 +12,7 @@
     using DCCCommon.Entities;
     using DCCCommon.Messages;
     using DCCDiscoveryService.Messages;
+    using DSL;
     using EasySharp.NHelpers.CustomExMethods;
     using EasySharp.NHelpers.CustomWrappers.Networking;
     using Interfaces;
@@ -237,6 +237,8 @@
 
             LinkedList<IEnumerable<byte>> receivedBinaryData = new LinkedList<IEnumerable<byte>>();
 
+            NetworkStream networkStream = tcpWorker.GetStream();
+
             while (true)
             {
                 if (tcpListener.Inactive)
@@ -245,8 +247,6 @@
                 }
 
                 byte[] buffer = new byte[Common.BufferSize];
-
-                NetworkStream networkStream = tcpWorker.GetStream();
 
                 int receivedBytes = await networkStream
                     .ReadAsync(buffer, 0, buffer.Length)
@@ -273,8 +273,11 @@
             var requestDataMessage = xmlMessage.DeserializeTo<RequestDataMessage>();
 
 
+            var dslInterpreter = new DSLInterpreter(requestDataMessage);
 
-            var employees = new List<Employee>();
+            IEnumerable<Employee> currentNodeEmployees = await dslInterpreter.GetDataAsync().ConfigureAwait(false);
+
+            var employees = new List<Employee>(currentNodeEmployees);
 
             var dataAgentRequestTasks = new LinkedList<Task<string>>();
 
@@ -310,12 +313,19 @@
                 }
             }
 
+            string serializedData = await dslInterpreter
+                .TransfromDataToRequiredFromatAsync(employees)
+                .ConfigureAwait(false);
 
+            // To be returned
+
+            byte[] dataToBeSent = serializedData.ToUtf8EncodedByteArray();
+
+            await networkStream.WriteAsync(dataToBeSent, 0, dataToBeSent.Length).ConfigureAwait(false);
+
+            tcpWorker.Close();
         }
-
 
         public void Dispose() { }
     }
-
-
 }

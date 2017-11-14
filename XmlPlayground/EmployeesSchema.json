@@ -6,70 +6,63 @@
   "properties": {
     "Employees": {
       "$id": "/properties/Employees", 
-      "type": "object", 
-      "properties": {
-        "Employee": {
-          "$id": "/properties/Employees/properties/Employee", 
-          "type": "array", 
-          "items": {
-            "$id": "/properties/Employees/properties/Employee/items", 
-            "type": "object", 
-            "properties": {
-              "id": {
-                "$id": "/properties/Employees/properties/Employee/items/properties/id", 
-                "type": "string", 
-                "title": "The Id Schema.", 
-                "description": "An explanation about the purpose of this instance.", 
-                "default": "", 
-                "examples": [
-                  "1"
-                ]
-              }, 
-              "firstname": {
-                "$id": "/properties/Employees/properties/Employee/items/properties/firstname", 
-                "type": "string", 
-                "title": "The Firstname Schema.", 
-                "description": "An explanation about the purpose of this instance.", 
-                "default": "", 
-                "examples": [
-                  "Elsworth"
-                ]
-              }, 
-              "lastname": {
-                "$id": "/properties/Employees/properties/Employee/items/properties/lastname", 
-                "type": "string", 
-                "title": "The Lastname Schema.", 
-                "description": "An explanation about the purpose of this instance.", 
-                "default": "", 
-                "examples": [
-                  "Seers"
-                ]
-              }, 
-              "gender": {
-                "$id": "/properties/Employees/properties/Employee/items/properties/gender", 
-                "type": "string", 
-                "title": "The Gender Schema.", 
-                "description": "An explanation about the purpose of this instance.", 
-                "default": "", 
-                "examples": [
-                  "Male"
-                ]
-              }, 
-              "salary": {
-                "$id": "/properties/Employees/properties/Employee/items/properties/salary", 
-                "type": "string", 
-                "title": "The Salary Schema.", 
-                "description": "An explanation about the purpose of this instance.", 
-                "default": "", 
-                "examples": [
-                  "1803"
-                ]
-              }
-            }
+      "type": "array", 
+      "items": {
+        "$id": "/properties/Employees/items", 
+        "type": "object", 
+        "properties": {
+          "id": {
+            "$id": "/properties/Employees/items/properties/id", 
+            "type": "integer", 
+            "title": "The Id Schema.", 
+            "description": "An explanation about the purpose of this instance.", 
+            "default": 0, 
+            "examples": [
+              1
+            ]
+          }, 
+          "firstname": {
+            "$id": "/properties/Employees/items/properties/firstname", 
+            "type": "string", 
+            "title": "The Firstname Schema.", 
+            "description": "An explanation about the purpose of this instance.", 
+            "default": "", 
+            "examples": [
+              "Elsworth"
+            ]
+          }, 
+          "lastname": {
+            "$id": "/properties/Employees/items/properties/lastname", 
+            "type": "string", 
+            "title": "The Lastname Schema.", 
+            "description": "An explanation about the purpose of this instance.", 
+            "default": "", 
+            "examples": [
+              "Seers"
+            ]
+          }, 
+          "gender": {
+            "$id": "/properties/Employees/items/properties/gender", 
+            "type": "string", 
+            "title": "The Gender Schema.", 
+            "description": "An explanation about the purpose of this instance.", 
+            "default": "", 
+            "examples": [
+              "Male"
+            ]
+          }, 
+          "salary": {
+            "$id": "/properties/Employees/items/properties/salary", 
+            "type": "integer", 
+            "title": "The Salary Schema.", 
+            "description": "An explanation about the purpose of this instance.", 
+            "default": 0, 
+            "examples": [
+              1803
+            ]
           }
         }
       }
     }
   }
 }
-

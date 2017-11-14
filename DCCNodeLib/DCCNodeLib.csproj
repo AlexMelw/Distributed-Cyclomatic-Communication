@@ -42,8 +42,8 @@
   <ItemGroup>
     <Compile Include="DSL\DSLInterpreter.cs" />
     <Compile Include="Example.cs" />
+    <Compile Include="JsonEntities\El.cs" />
     <Compile Include="LocalStorageManager.cs" />
-    <Compile Include="Steps.cs" />
     <Compile Include="Workers\DCCNodeWorker.cs" />
     <Compile Include="Interfaces\IDCCNodeWorker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -60,6 +60,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>10.0.3</Version>
+    </PackageReference>
     <PackageReference Include="System.Linq.Dynamic">
       <Version>1.0.7</Version>
     </PackageReference>
