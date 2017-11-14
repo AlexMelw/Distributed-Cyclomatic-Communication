@@ -1,18 +1,19 @@
 ﻿namespace DCCNodeLib.Workers
 {
+    using DSL;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
     using System.Net;
     using System.Net.Sockets;
+    using System.Runtime.Remoting.Messaging;
     using System.Threading.Tasks;
     using DCCCommon;
     using DCCCommon.Conventions;
     using DCCCommon.Entities;
     using DCCCommon.Messages;
     using DCCDiscoveryService.Messages;
-    using DSL;
     using EasySharp.NHelpers.CustomExMethods;
     using EasySharp.NHelpers.CustomWrappers.Networking;
     using Interfaces;
@@ -140,7 +141,7 @@
                 .ConfigureAwait(false);
         }
 
-        private async Task StartListeningToTcpServingPortAsync()
+        private Task StartListeningToTcpServingPortAsync()
         {
             //var discoveryResponseMessages = new LinkedList<DiscoveryResponseMessage>();
 
@@ -227,6 +228,8 @@
                     tcpListener.Stop();
                 }
             }
+
+            return Task.CompletedTask;
         }
 
         private async Task HandleRequestAsync(TcpListenerEx tcpListener, TcpClient tcpWorker)

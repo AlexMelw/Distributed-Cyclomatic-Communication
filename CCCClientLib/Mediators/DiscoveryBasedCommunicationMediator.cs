@@ -40,7 +40,169 @@
             return data;
         }
 
-        public void Dispose() { }
+        #region Maven Node Related
+
+        private async Task<IPEndPoint> GetMavenEndPointAsync()
+        {
+            // JoinMulticastGroup
+            var mCastSocket = await CreateMulticastSocketAsync().ConfigureAwait(false);
+
+            // Discovery Init
+            await InitializeDiscoveryProcedureAsync(mCastSocket).ConfigureAwait(false);
+
+            // Discovery Receive Response
+            var discoveryResponseMessages = await ReceiveDiscoveryResponseMessagesAsync().ConfigureAwait(false);
+
+            // Discovery Proccess Response Results
+            var mavenEndPoint = await IdentifyMavenNodeAsync(discoveryResponseMessages).ConfigureAwait(false);
+
+            return mavenEndPoint;
+        }
+
+        private Task<IPEndPoint> IdentifyMavenNodeAsync(LinkedList<DiscoveryResponseMessage> discoveryResponseMessages)
+        {
+            int maxConnectedNodes = discoveryResponseMessages.Max(m => m.NodeConnectionNum);
+
+            DiscoveryResponseMessage maven = discoveryResponseMessages?.FirstOrDefault(message =>
+                message.NodeConnectionNum == maxConnectedNodes);
+
+            IPAddress mavenIpAddress = IPAddress.Parse(maven.IPAddress);
+
+            IPEndPoint mavenEndPoint = new IPEndPoint(mavenIpAddress, maven.ListeningPort);
+
+            return Task.FromResult(mavenEndPoint);
+        }
+
+        private async Task<LinkedList<DiscoveryResponseMessage>> ReceiveDiscoveryResponseMessagesAsync()
+        {
+            var discoveryResponseMessages = new LinkedList<DiscoveryResponseMessage>();
+
+            var tcpListener = new TcpListenerEx(IPAddress.Any, ClientReceiveResponseTcpPort);
+
+            try
+            {
+                tcpListener.Start();
+
+                Console.WriteLine(" [TCP] The local End point is  :" + tcpListener.LocalEndpoint);
+                Console.WriteLine(" [TCP] Waiting for a connection.....\n");
+
+                var timeout = TimeSpan.FromSeconds(30);
+                DateTime listeningStartTime = DateTime.Now;
+
+                var responseHandlers = new LinkedList<Task<DiscoveryResponseMessage>>();
+
+                while (true) // is serving continuously
+                {
+                    if (DateTime.Now.Subtract(listeningStartTime) >= timeout)
+                    {
+                        // No more accept responses from DIS nodes
+                        break;
+                    }
+
+                    TcpClient tcpClient = tcpListener.AcceptTcpClient();
+
+                    Console.WriteLine($" [TCP] Connection accepted from: {{ {tcpClient.Client.RemoteEndPoint} }}");
+                    Console.WriteLine($" [TCP] SoketWorker is bound to: {{ {tcpClient.Client.LocalEndPoint} }}");
+
+                    #region Trash
+
+                    //TcpServerWorker.Instance
+                    //    .Init(workerTcpSocket, tcpListener)
+                    //    .StartWorking();
+
+                    //// TODO Unchecked modification
+                    //if (tcpListener.Inactive)
+                    //{
+                    //    tcpListener.Stop();
+                    //}
+
+                    #endregion
+
+                    Task<DiscoveryResponseMessage> responseHandlerTask = Task.Run(() =>
+                    {
+                        return HandleResponseAsync(tcpListener, tcpClient);
+                    });
+
+                    responseHandlers.AddLast(responseHandlerTask);
+                }
+
+
+                foreach (Task<DiscoveryResponseMessage> handlerTask in responseHandlers)
+                {
+                    if (!handlerTask.IsCompleted)
+                    {
+                        // We do not care about the tasks that didn't get the job done
+                        continue;
+                    }
+
+                    DiscoveryResponseMessage discoveryResponseMessage = await handlerTask.ConfigureAwait(false);
+
+                    discoveryResponseMessages.AddLast(discoveryResponseMessage);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.Out.WriteLine("[TCP] Grave error occured. Searver is dead.");
+                Console.Out.WriteLine($"e = {e.Message}");
+                Debug.WriteLine("[TCP] Grave error occured. Searver is dead.");
+                Debug.WriteLine($"e = {e.Message}");
+                Console.Out.WriteLine("[TCP] PRESS ANY KEY TO QUIT");
+                Console.ReadLine();
+
+                //throw; // TODO Unchecked modification
+            }
+            finally
+            {
+                if (tcpListener.Active)
+                {
+                    tcpListener.Stop();
+                }
+            }
+            return discoveryResponseMessages;
+        }
+
+        private Task InitializeDiscoveryProcedureAsync(Socket mCastSocket)
+        {
+            var discoveryRequestMessage = new MulticastDiscoveryRequestMessage
+            {
+                IPAddress = ClientLocalIpAddress.ToString(),
+                ListeningPort = _discoveryResponsePort
+            };
+
+            // Send multicast packets to the listener.
+            IPEndPoint remoteEndPoint = new IPEndPoint(MulticastIPEndPoint.Address, MulticastIPEndPoint.Port);
+
+            string xml = discoveryRequestMessage.SerializeToXml();
+            byte[] dataToBeSent = xml.ToUtf8EncodedByteArray();
+
+            mCastSocket.SendTo(dataToBeSent, remoteEndPoint);
+
+            Console.WriteLine("Initializing discovery procedure...");
+
+            mCastSocket.Close();
+
+            return Task.CompletedTask;
+        }
+
+        private Task<Socket> CreateMulticastSocketAsync()
+        {
+            var mCastSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+
+            var localEP = new IPEndPoint(ClientLocalIpAddress, 0);
+
+            // Bind this endpoint to the multicast socket.
+            mCastSocket.Bind(localEP); // bind socket to 127.0.0.1:*
+
+            // Define a MulticastOption object specifying the multicast group address and the local IP address.
+            // The multicast group address is the same as the address used by the listener.
+            var mCastOption = new MulticastOption(MulticastIPEndPoint.Address, ClientLocalIpAddress);
+
+            mCastSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, mCastOption);
+
+            return Task.FromResult(mCastSocket);
+        }
+
+        #endregion
 
         private async Task<string> RetrieveDataFromMavenAsync(IPEndPoint mavenEndPoint,
             RequestDataMessage requestMessage)
@@ -165,149 +327,6 @@
             return responseMessage;
         }
 
-        private async Task<IPEndPoint> GetMavenEndPointAsync()
-        {
-            var discoveryRequestMessage = new MulticastDiscoveryRequestMessage
-            {
-                IPAddress = ClientLocalIpAddress.ToString(),
-                ListeningPort = _discoveryResponsePort
-            };
-
-            #region JoinMulticastGroup
-
-            var mCastSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-
-            var localEP = new IPEndPoint(ClientLocalIpAddress, 0);
-
-            // Bind this endpoint to the multicast socket.
-            mCastSocket.Bind(localEP); // bind socket to 127.0.0.1:*
-
-            // Define a MulticastOption object specifying the multicast group address and the local IP address.
-            // The multicast group address is the same as the address used by the listener.
-            var mCastOption = new MulticastOption(MulticastIPEndPoint.Address, ClientLocalIpAddress);
-
-            mCastSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, mCastOption);
-
-            #endregion
-
-            #region Discovery Init
-
-            // Send multicast packets to the listener.
-            IPEndPoint remoteEndPoint = new IPEndPoint(MulticastIPEndPoint.Address, MulticastIPEndPoint.Port);
-
-            string xml = discoveryRequestMessage.SerializeToXml();
-            byte[] dataToBeSent = xml.ToUtf8EncodedByteArray();
-
-            mCastSocket.SendTo(dataToBeSent, remoteEndPoint);
-
-            Console.WriteLine("Initializing discovery procedure...");
-
-            mCastSocket.Close();
-
-            #endregion
-
-            #region Discovery Receive Response
-
-            var discoveryResponseMessages = new LinkedList<DiscoveryResponseMessage>();
-
-            var tcpListener = new TcpListenerEx(IPAddress.Any, ClientReceiveResponseTcpPort);
-
-            try
-            {
-                tcpListener.Start();
-
-                Console.WriteLine(" [TCP] The local End point is  :" + tcpListener.LocalEndpoint);
-                Console.WriteLine(" [TCP] Waiting for a connection.....\n");
-
-                var timeout = TimeSpan.FromSeconds(30);
-                DateTime listeningStartTime = DateTime.Now;
-
-                var responseHandlers = new LinkedList<Task<DiscoveryResponseMessage>>();
-
-                while (true) // is serving continuously
-                {
-                    if (DateTime.Now.Subtract(listeningStartTime) >= timeout)
-                    {
-                        // No more accept responses from DIS nodes
-                        break;
-                    }
-
-                    TcpClient tcpClient = tcpListener.AcceptTcpClient();
-
-                    Console.WriteLine($" [TCP] Connection accepted from: {{ {tcpClient.Client.RemoteEndPoint} }}");
-                    Console.WriteLine($" [TCP] SoketWorker is bound to: {{ {tcpClient.Client.LocalEndPoint} }}");
-
-                    #region Trash
-
-                    //TcpServerWorker.Instance
-                    //    .Init(workerTcpSocket, tcpListener)
-                    //    .StartWorking();
-
-                    //// TODO Unchecked modification
-                    //if (tcpListener.Inactive)
-                    //{
-                    //    tcpListener.Stop();
-                    //}
-
-                    #endregion
-
-                    Task<DiscoveryResponseMessage> responseHandlerTask = Task.Run(() =>
-                    {
-                        return HandleResponseAsync(tcpListener, tcpClient);
-                    });
-
-                    responseHandlers.AddLast(responseHandlerTask);
-                }
-
-
-                foreach (Task<DiscoveryResponseMessage> handlerTask in responseHandlers)
-                {
-                    if (!handlerTask.IsCompleted)
-                    {
-                        // We do not care about the tasks that didn't get the job done
-                        continue;
-                    }
-
-                    DiscoveryResponseMessage discoveryResponseMessage = await handlerTask.ConfigureAwait(false);
-
-                    discoveryResponseMessages.AddLast(discoveryResponseMessage);
-                }
-            }
-            catch (Exception e)
-            {
-                Console.Out.WriteLine("[TCP] Grave error occured. Searver is dead.");
-                Console.Out.WriteLine($"e = {e.Message}");
-                Debug.WriteLine("[TCP] Grave error occured. Searver is dead.");
-                Debug.WriteLine($"e = {e.Message}");
-                Console.Out.WriteLine("[TCP] PRESS ANY KEY TO QUIT");
-                Console.ReadLine();
-
-                //throw; // TODO Unchecked modification
-            }
-            finally
-            {
-                if (tcpListener.Active)
-                {
-                    tcpListener.Stop();
-                }
-            }
-
-            #endregion
-
-            #region Discovery Processs Reqponse
-
-            int maxConnectedNodes = discoveryResponseMessages.Max(m => m.NodeConnectionNum);
-
-            DiscoveryResponseMessage maven = discoveryResponseMessages?.FirstOrDefault(message =>
-                message.NodeConnectionNum == maxConnectedNodes);
-
-            IPAddress mavenIpAddress = IPAddress.Parse(maven.IPAddress);
-
-            IPEndPoint mavenEndPoint = new IPEndPoint(mavenIpAddress, maven.ListeningPort);
-
-            return mavenEndPoint;
-
-            #endregion
-        }
+        public void Dispose() { }
     }
 }
