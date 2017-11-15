@@ -8,7 +8,7 @@
     {
         ICommunicationMediator CommunicationMediator { get; set; }
         Task<bool> ValidateResponseAgainstSchemaAsync(string schemaPath);
-        Task MakeRequestAsync(string dataType, string filterCondition, string orderingCondition);
+        Task MakeRequestAsync(string dataType, string dataFormat, string filterCondition, string orderingCondition);
         Task<string> GetResponseAsync();
         Task InitializeAsync();
     }

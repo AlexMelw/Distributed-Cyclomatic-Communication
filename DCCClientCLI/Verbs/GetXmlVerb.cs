@@ -5,6 +5,6 @@
     [Verb("get-xml", HelpText = "Retrieves xml from ...")]
     class GetXmlVerb : GetVerb
     {
-        public GetXmlVerb() => VerbType = VerbType.Xml;
+        public GetXmlVerb() => DataFormat = DataFormat.Xml;
     }
 }

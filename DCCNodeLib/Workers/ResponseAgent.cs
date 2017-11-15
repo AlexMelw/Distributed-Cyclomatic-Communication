@@ -9,10 +9,15 @@
 
     public class ResponseAgent
     {
-        public Task SendDiscoveryResponseAsync(
+        public async Task SendDiscoveryResponseAsync(
             DiscoveryResponseMessage responseMessage,
             IPAddress clientIpAddress, int clientListeningPort)
         {
+            // $C$ Bug Fix - TO BE REVIEWED
+            // Let the client initialize the response TcpListener
+            await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+
+            // Let's send the response
             var discoveryReceiverEP = new IPEndPoint(clientIpAddress, clientListeningPort);
 
             var tcpSender = new TcpClient(discoveryReceiverEP);
@@ -23,9 +28,7 @@
 
             byte[] dataToBeSent = xmlMessage.ToUtf8EncodedByteArray();
 
-            networkStream.WriteAsync(dataToBeSent, 0, dataToBeSent.Length);
-
-            return Task.CompletedTask;
+            await networkStream.WriteAsync(dataToBeSent, 0, dataToBeSent.Length).ConfigureAwait(false);
         }
     }
 }

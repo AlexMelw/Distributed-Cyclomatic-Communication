@@ -91,7 +91,7 @@
         {
             var discoveryResponseMessages = new LinkedList<DiscoveryResponseMessage>();
 
-            var tcpListener = new TcpListenerEx(IPAddress.Any, ClientReceiveResponseTcpPort);
+            var tcpListener = new TcpListenerEx(IPAddress.Any, _discoveryResponsePort);
 
             try
             {
@@ -100,7 +100,7 @@
                 Console.WriteLine(" [TCP] The local End point is  :" + tcpListener.LocalEndpoint);
                 Console.WriteLine(" [TCP] Waiting for a connection.....\n");
 
-                int timeoutSec = 5;
+                int timeoutSec = 600;
                 tcpListener.Server.ReceiveTimeout = timeoutSec;
                 TimeSpan timeoutTimeSpan = TimeSpan.FromSeconds(timeoutSec);
                 DateTime listeningStartTime = DateTime.Now;
@@ -124,8 +124,7 @@
 
                 var responseHandlers = new LinkedList<Task<DiscoveryResponseMessage>>();
 
-                while (DateTime.Now.Subtract(listeningStartTime) >= timeoutTimeSpan
-                ) // is serving continuously while timeout isn't reached
+                while (DateTime.Now.Subtract(listeningStartTime) < timeoutTimeSpan) // is serving continuously while timeout isn't reached
                 {
                     await Console.Out.WriteLineAsync("Before accepting....").ConfigureAwait(false);
 

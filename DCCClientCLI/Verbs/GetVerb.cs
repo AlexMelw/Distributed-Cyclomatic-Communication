@@ -20,6 +20,6 @@
             HelpText = "Schema file to validate data against.")]
         public string SchemaPath { get; set; }
 
-        public VerbType VerbType { get; set; }
+        public DataFormat DataFormat { get; set; }
     }
 }

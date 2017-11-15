@@ -17,10 +17,11 @@
 
         public abstract Task<bool> ValidateResponseAgainstSchemaAsync(string schemaPath);
 
-        public async Task MakeRequestAsync(string dataType, string filterCondition, string orderingCondition)
+        public async Task MakeRequestAsync(string dataType, string dataFormat, string filterCondition, string orderingCondition)
         {
             var requestMessage = new RequestDataMessage
             {
+                DataFormat = dataFormat,
                 Propagation = 1,
                 DataType = dataType,
                 FilterCondition = filterCondition,

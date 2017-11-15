@@ -15,6 +15,7 @@
 
                 await clientWorker.MakeRequestAsync(
                         options.DataType,
+                        options.DataFormat.ToString(),
                         options.FilterCondition,
                         options.OrderingCondition)
                     .ConfigureAwait(false);
@@ -35,7 +36,7 @@
                 }
                 else
                 {
-                    string dataType = options.VerbType.ToString();
+                    string dataType = options.DataFormat.ToString();
                     await Console.Out.WriteLineAsync($"Received {dataType} is NOT valid!").ConfigureAwait(false);
                 }
             }

@@ -31,10 +31,9 @@
             Console.Out.WriteLine($"Node with id [ {CurrentNodeId} ] is activated.");
 
             Task multicastListenerTask = Task.Run(StartListeningToMulticastPortAsync);
-
-            Task tcpListenerTask = Task.Run(StartListeningToTcpServingPortAsync);
-
-            Task.WaitAll(multicastListenerTask, tcpListenerTask);
+            //Task tcpListenerTask = Task.Run(StartListeningToTcpServingPortAsync);
+            //Task.WaitAll(multicastListenerTask, tcpListenerTask);
+            multicastListenerTask.Wait();
         }
 
         public async Task InitAsync(int nodeId)
@@ -104,8 +103,12 @@
             // Multicast Socket Initialization
             Socket mCastSocket = await MulticastSocketInitAsync().ConfigureAwait(false);
 
+
             // To be put below the while loop
             //mCastSocket.Close(300);
+
+            await Console.Out.WriteLineAsync($"Start listening to {MulticastIPEndPoint}")
+                .ConfigureAwait(false);
 
             EndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
             byte[] buffer = new byte[MulticastBufferSize];
@@ -132,8 +135,17 @@
 
             mCastSocket.Bind(localEndPoint);
 
-            mCastSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership,
-                new MulticastOption(MulticastIPEndPoint.Address, LocalIpAddress));
+            MulticastOption multicastOption =
+                new MulticastOption(MulticastIPEndPoint.Address, LocalIpAddress);
+
+            mCastSocket.SetSocketOption(
+                SocketOptionLevel.IP,
+                SocketOptionName.AddMembership,
+                multicastOption);
+
+            Console.WriteLine("Current multicast group is: " + multicastOption.Group);
+            Console.WriteLine("Current multicast local address is: " + multicastOption.LocalAddress);
+
 
             return Task.FromResult(mCastSocket);
         }

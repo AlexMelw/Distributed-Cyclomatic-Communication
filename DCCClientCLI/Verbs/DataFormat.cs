@@ -1,6 +1,6 @@
 ﻿namespace DCCClientCLI.Verbs
 {
-    enum VerbType
+    enum DataFormat
     {
         Xml,
         Json

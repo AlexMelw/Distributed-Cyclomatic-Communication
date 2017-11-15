@@ -10,6 +10,8 @@
     {
         private static void RunNodeWithSpecifiedId(NodeOptions options)
         {
+            Console.Title = $"DIS NODE :: ID {options.Id}";
+
             Task.Run((Action) (async () =>
             {
                 var nodeWorker = IoC.Resolve<IDCCNodeWorker>();
