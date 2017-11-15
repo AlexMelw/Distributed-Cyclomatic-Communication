@@ -27,12 +27,12 @@
 
         public async Task StartAsync()
         {
-            Task MulticastListenerTask = Task.Run(StartListeningToMulticastPortAsync);
+            Task multicastListenerTask = Task.Run(StartListeningToMulticastPortAsync);
 
-            Task TcpListenerTask = Task.Run(StartListeningToTcpServingPortAsync);
+            Task tcpListenerTask = Task.Run(StartListeningToTcpServingPortAsync);
 
             //Task.WaitAll(MulticastListenerTask, TcpListenerTask);
-            await Task.WhenAll(MulticastListenerTask, TcpListenerTask).ConfigureAwait(false);
+            await Task.WhenAll(multicastListenerTask, tcpListenerTask).ConfigureAwait(false);
         }
 
         public async Task InitAsync(int nodeId)
@@ -85,22 +85,8 @@
 
         private async Task StartListeningToMulticastPortAsync()
         {
-            #region Multicast Socket Initialization
-
-            Socket mCastSocket = new Socket(
-                AddressFamily.InterNetwork,
-                SocketType.Dgram,
-                ProtocolType.Udp);
-
-            var localEndPoint = new IPEndPoint(LocalIpAddress, MulticastIPEndPoint.Port);
-
-            mCastSocket.Bind(localEndPoint);
-
-            mCastSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership,
-                new MulticastOption(MulticastIPEndPoint.Address, LocalIpAddress));
-
-            #endregion
-
+            // Multicast Socket Initialization
+            Socket mCastSocket = await MulticastSocketInitAsync().ConfigureAwait(false);
 
             // To be put below the while loop
             //mCastSocket.Close(300);
@@ -117,6 +103,23 @@
 
                 await ProcessMulticastMessageAsync(buffer, bytesRead).ConfigureAwait(false);
             }
+        }
+
+        private Task<Socket> MulticastSocketInitAsync()
+        {
+            Socket mCastSocket = new Socket(
+                AddressFamily.InterNetwork,
+                SocketType.Dgram,
+                ProtocolType.Udp);
+
+            var localEndPoint = new IPEndPoint(LocalIpAddress, MulticastIPEndPoint.Port);
+
+            mCastSocket.Bind(localEndPoint);
+
+            mCastSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership,
+                new MulticastOption(MulticastIPEndPoint.Address, LocalIpAddress));
+
+            return Task.FromResult(mCastSocket);
         }
 
         private async Task ProcessMulticastMessageAsync(byte[] messageBuffer, int bytesRead)
@@ -316,7 +319,10 @@
                 }
             }
 
-            string serializedData = await dslInterpreter
+
+            var dslConverter = new DSLConverter(requestDataMessage);
+
+            string serializedData = await dslConverter
                 .TransfromDataToRequiredFromatAsync(employees)
                 .ConfigureAwait(false);
 

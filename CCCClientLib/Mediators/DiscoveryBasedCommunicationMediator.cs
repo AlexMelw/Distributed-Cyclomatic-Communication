@@ -87,19 +87,22 @@
                 Console.WriteLine(" [TCP] The local End point is  :" + tcpListener.LocalEndpoint);
                 Console.WriteLine(" [TCP] Waiting for a connection.....\n");
 
-                var timeout = TimeSpan.FromSeconds(30);
+                int timeoutSec = 30;
+                tcpListener.Server.ReceiveTimeout = timeoutSec;
+                var timeoutTimeSpan = TimeSpan.FromSeconds(timeoutSec);
                 DateTime listeningStartTime = DateTime.Now;
 
                 var responseHandlers = new LinkedList<Task<DiscoveryResponseMessage>>();
 
                 while (true) // is serving continuously
                 {
-                    if (DateTime.Now.Subtract(listeningStartTime) >= timeout)
+                    if (DateTime.Now.Subtract(listeningStartTime) >= timeoutTimeSpan)
                     {
                         // No more accept responses from DIS nodes
                         break;
                     }
 
+                    
                     TcpClient tcpClient = tcpListener.AcceptTcpClient();
 
                     Console.WriteLine($" [TCP] Connection accepted from: {{ {tcpClient.Client.RemoteEndPoint} }}");

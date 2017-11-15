@@ -15,7 +15,8 @@
     {
         static async Task Main(string[] args)
         {
-            IEnumerable<Employee> employees = LocalStorageManager.Default.GetEmployees().Where(e => e.Id.In(10, 11, 12, 13, 14, 15));
+            IEnumerable<Employee> employees =
+                LocalStorageManager.Default.GetEmployees().Where(e => e.Id.In(10, 11, 12, 13, 14, 15));
 
             //IEnumerable enumerable = employees.Where("Id > 10 and (Id <= 20)")
             //    .OrderBy("Id descending")
@@ -32,7 +33,7 @@
             //    }
             //}
 
-            var interpreter = new DSLInterpreter(new RequestDataMessage
+            var interpreter = new DSLConverter(new RequestDataMessage
             {
                 DataFormat = Common.Json
             });
