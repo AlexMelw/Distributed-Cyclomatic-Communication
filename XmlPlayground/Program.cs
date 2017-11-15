@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using DCCCommon.Conventions;
     using DCCCommon.Entities;
@@ -15,8 +16,8 @@
     {
         static async Task Main(string[] args)
         {
-            IEnumerable<Employee> employees =
-                LocalStorageManager.Default.GetEmployees().Where(e => e.Id.In(10, 11, 12, 13, 14, 15));
+            //IEnumerable<Employee> employees =
+            //    LocalStorageManager.Default.GetEmployees().Where(e => e.Id.In(10, 11, 12, 13, 14, 15));
 
             //IEnumerable enumerable = employees.Where("Id > 10 and (Id <= 20)")
             //    .OrderBy("Id descending")
@@ -33,15 +34,28 @@
             //    }
             //}
 
-            var interpreter = new DSLConverter(new RequestDataMessage
+            //var interpreter = new DSLConverter(new RequestDataMessage
+            //{
+            //    DataFormat = Common.Json
+            //});
+
+
+            //string json = await interpreter.TransfromDataToRequiredFromatAsync(employees).ConfigureAwait(false);
+
+            //await Console.Out.WriteLineAsync(json).ConfigureAwait(false);
+
+
+            var timer = new Timer(state =>
             {
-                DataFormat = Common.Json
-            });
+                Console.Out.WriteLine("Works!!!");
+            }, null, TimeSpan.FromSeconds(5), Timeout.InfiniteTimeSpan);
 
 
-            string json = await interpreter.TransfromDataToRequiredFromatAsync(employees).ConfigureAwait(false);
+            while (true)
+            {
+                
+            }
 
-            await Console.Out.WriteLineAsync(json).ConfigureAwait(false);
         }
     }
 }

@@ -7,7 +7,6 @@
     using System.Linq;
     using System.Net;
     using System.Net.Sockets;
-    using System.Runtime.Remoting.Messaging;
     using System.Threading.Tasks;
     using DCCCommon;
     using DCCCommon.Conventions;
@@ -294,9 +293,13 @@
                 requestDataMessage.DataFormat = Common.Xml;
 
                 var dataAgent = new DataAgent();
-                Task<string> dataRequestTask = dataAgent.MakeRequestAsync(requestDataMessage);
 
-                dataAgentRequestTasks.AddLast(dataRequestTask);
+                foreach (IPEndPoint nodeEndPoint in AdjacentNodesEndPoints)
+                {
+                    Task<string> dataRequestTask = dataAgent.MakeRequestAsync(requestDataMessage, nodeEndPoint);
+
+                    dataAgentRequestTasks.AddLast(dataRequestTask);
+                }
             }
 
             while (dataAgentRequestTasks.Count > 0)

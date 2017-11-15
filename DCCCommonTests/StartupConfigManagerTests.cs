@@ -59,7 +59,7 @@
         {
             // Arrange
             string filePath = GetStartupConfigPath();
-            var testIpEndPoint = new IPEndPoint(IPAddress.Parse("224.1.2.3"), 27549);
+            var testIpEndPoint = new IPEndPoint(IPAddress.Parse("228.1.2.3"), 27549);
 
             StartupConfigManagerTestEx.Default.ConfigFilePath = filePath;
 
@@ -137,7 +137,7 @@
             // Arrange
             string filePath = GetStartupConfigPath();
             IPEndPoint testDiscoveryClientMulticastIpEndPoint =
-                new IPEndPoint(IPAddress.Parse("224.1.2.3"), 27549);
+                new IPEndPoint(IPAddress.Parse("228.1.2.3"), 27549);
 
             StartupConfigManagerTestEx.Default.ConfigFilePath = filePath;
 

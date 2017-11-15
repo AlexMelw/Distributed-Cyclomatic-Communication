@@ -6,8 +6,9 @@
     using System.Linq;
     using System.Net;
     using System.Net.Sockets;
-    using System.Security.Cryptography;
+    using System.Threading;
     using System.Threading.Tasks;
+    using DCCCommon;
     using DCCCommon.Conventions;
     using DCCCommon.Messages;
     using DCCDiscoveryService.Messages;
@@ -36,7 +37,7 @@
         {
             IPEndPoint mavenEndPoint = await GetMavenEndPointAsync().ConfigureAwait(false);
 
-            string data = await RetrieveDataFromMavenAsync(mavenEndPoint, requestMessage).ConfigureAwait(false);
+            string data = await RetrieveDataFromMavenAsync(requestMessage, mavenEndPoint).ConfigureAwait(false);
 
             return data;
         }
@@ -60,18 +61,30 @@
             return mavenEndPoint;
         }
 
-        private Task<IPEndPoint> IdentifyMavenNodeAsync(LinkedList<DiscoveryResponseMessage> discoveryResponseMessages)
+        private async Task<IPEndPoint> IdentifyMavenNodeAsync(
+            LinkedList<DiscoveryResponseMessage> discoveryResponseMessages)
         {
-            int maxConnectedNodes = discoveryResponseMessages.Max(m => m.NodeConnectionNum);
+            int maxConnectedNodes = discoveryResponseMessages.Count == 0
+                ? 0
+                : discoveryResponseMessages.Max(m => m.NodeConnectionNum);
 
             DiscoveryResponseMessage maven = discoveryResponseMessages?.FirstOrDefault(message =>
                 message.NodeConnectionNum == maxConnectedNodes);
 
-            IPAddress mavenIpAddress = IPAddress.Parse(maven.IPAddress);
+            //await Console.Out.WriteLineAsync("Before maven null").ConfigureAwait(false);
 
+            if (maven == null)
+            {
+                //await Console.Out.WriteLineAsync("Maven is NULL").ConfigureAwait(false);
+                await Console.Out.WriteLineAsync("No nodes were discovered! Exiting application...")
+                    .ConfigureAwait(false);
+                Environment.Exit(1);
+            }
+
+            IPAddress mavenIpAddress = IPAddress.Parse(maven.IPAddress);
             IPEndPoint mavenEndPoint = new IPEndPoint(mavenIpAddress, maven.ListeningPort);
 
-            return Task.FromResult(mavenEndPoint);
+            return mavenEndPoint;
         }
 
         private async Task<LinkedList<DiscoveryResponseMessage>> ReceiveDiscoveryResponseMessagesAsync()
@@ -87,23 +100,45 @@
                 Console.WriteLine(" [TCP] The local End point is  :" + tcpListener.LocalEndpoint);
                 Console.WriteLine(" [TCP] Waiting for a connection.....\n");
 
-                int timeoutSec = 30;
+                int timeoutSec = 5;
                 tcpListener.Server.ReceiveTimeout = timeoutSec;
-                var timeoutTimeSpan = TimeSpan.FromSeconds(timeoutSec);
+                TimeSpan timeoutTimeSpan = TimeSpan.FromSeconds(timeoutSec);
                 DateTime listeningStartTime = DateTime.Now;
+
+                //var timer = new Timer(state =>
+                //{
+                //    (state as TcpListenerEx)?.Stop();
+                //}, tcpListener,  1000*5, 1);
+
+                async Task EnforceTcpListeningTimeout()
+                {
+                    await Console.Out.WriteLineAsync("Start of async timer").ConfigureAwait(false);
+                    await Task.Delay(TimeSpan.FromSeconds(timeoutSec)).ConfigureAwait(false);
+                    tcpListener.Stop();
+                    await Console.Out.WriteLineAsync("Works just fine!").ConfigureAwait(false);
+                    await Console.Out.WriteLineAsync("").ConfigureAwait(false);
+                }
+
+                Task.Run(EnforceTcpListeningTimeout);
+
 
                 var responseHandlers = new LinkedList<Task<DiscoveryResponseMessage>>();
 
-                while (true) // is serving continuously
+                while (DateTime.Now.Subtract(listeningStartTime) >= timeoutTimeSpan
+                ) // is serving continuously while timeout isn't reached
                 {
-                    if (DateTime.Now.Subtract(listeningStartTime) >= timeoutTimeSpan)
+                    await Console.Out.WriteLineAsync("Before accepting....").ConfigureAwait(false);
+
+                    TcpClient tcpClient = default;
+                    try
                     {
-                        // No more accept responses from DIS nodes
+                        tcpClient = tcpListener.AcceptTcpClient();
+                    }
+                    catch (Exception)
+                    {
+                        await Console.Out.WriteLineAsync("Discovery procedure is terminated.").ConfigureAwait(false);
                         break;
                     }
-
-                    
-                    TcpClient tcpClient = tcpListener.AcceptTcpClient();
 
                     Console.WriteLine($" [TCP] Connection accepted from: {{ {tcpClient.Client.RemoteEndPoint} }}");
                     Console.WriteLine($" [TCP] SoketWorker is bound to: {{ {tcpClient.Client.LocalEndPoint} }}");
@@ -166,7 +201,7 @@
         }
 
         private async Task<DiscoveryResponseMessage> HandleResponseAsync(
-    TcpListenerEx tcpListener, TcpClient tcpWorker)
+            TcpListenerEx tcpListener, TcpClient tcpWorker)
         {
             await Console.Out.WriteLineAsync(
                     $" [TCP]   >> SERVER WORKER IS TALKING TO {tcpWorker.Client.RemoteEndPoint}")
@@ -292,64 +327,58 @@
         #region Download Payload Data
 
         private async Task<string> RetrieveDataFromMavenAsync(
-            IPEndPoint mavenEndPoint, RequestDataMessage requestMessage)
+            RequestDataMessage requestMessage, IPEndPoint mavenEndPoint)
         {
-            // Establish connection to the maven node
-            var tcpClient = new TcpClient();
-            await tcpClient.ConnectAsync(mavenEndPoint.Address, mavenEndPoint.Port).ConfigureAwait(false);
-            NetworkStream networkStream = tcpClient.GetStream();
-
-            // Prepare request message to be sent
-            string requestMessageXml = requestMessage.SerializeToXml();
-            byte[] dataToBeSent = requestMessageXml.ToUtf8EncodedByteArray();
-
             #region Trash
 
-            //var streamReader = new StreamReader(networkStream, Encoding.UTF8);
-            //var streamWriter = new StreamWriter(networkStream, Encoding.UTF8) { AutoFlush = true };
-            //await streamWriter.WriteAsync(requestMessageXml).ConfigureAwait(false);
+            //// Establish connection to the maven node
+            //var tcpClient = new TcpClient();
+            //await tcpClient.ConnectAsync(mavenEndPoint.Address, mavenEndPoint.Port).ConfigureAwait(false);
+            //NetworkStream networkStream = tcpClient.GetStream();
+
+            //// Prepare request message to be sent
+            //string requestMessageXml = requestMessage.SerializeToXml();
+            //byte[] dataToBeSent = requestMessageXml.ToUtf8EncodedByteArray();
+
+            //#region Trash
+
+            ////var streamReader = new StreamReader(networkStream, Encoding.UTF8);
+            ////var streamWriter = new StreamWriter(networkStream, Encoding.UTF8) { AutoFlush = true };
+            ////await streamWriter.WriteAsync(requestMessageXml).ConfigureAwait(false);
+
+            //#endregion
+
+            //// Send request message
+            //await networkStream.WriteAsync(dataToBeSent, 0, dataToBeSent.Length).ConfigureAwait(false);
+
+            //// Receive meta-data response
+            //byte[] buffer = new byte[Common.BufferSize];
+            //int bytesRead = await networkStream.ReadAsync(buffer, 0, Common.BufferSize).ConfigureAwait(false);
+            //int payloadSize = BitConverter.ToInt32(buffer.Take(bytesRead).ToArray(), 0);
+
+            //// Get Payload Data from maven
+            //string data = await RetrieveDataPayloadFromMavenAsync(payloadSize, networkStream, buffer)
+            //    .ConfigureAwait(false);
+
+            //#region Trash
+
+            ////streamReader.Close();
+            ////streamWriter.Close();
+
+            //#endregion
+
+            //tcpClient.Close();
+
+            //return data;
+            
 
             #endregion
 
-            // Send request message
-            await networkStream.WriteAsync(dataToBeSent, 0, dataToBeSent.Length).ConfigureAwait(false);
+            var dataAgent = new DataAgent();
 
-            // Receive meta-data response
-            byte[] buffer = new byte[Common.BufferSize];
-            int bytesRead = await networkStream.ReadAsync(buffer, 0, Common.BufferSize).ConfigureAwait(false);
-            int payloadSize = BitConverter.ToInt32(buffer.Take(bytesRead).ToArray(), 0);
-
-            // Get Payload Data from maven
-            string data = await RetrieveDataPayloadFromMavenAsync(payloadSize, networkStream, buffer).ConfigureAwait(false);
-
-            #region Trash
-
-            //streamReader.Close();
-            //streamWriter.Close();
-
-            #endregion
-
-            tcpClient.Close();
-
-            return data;
-        }
-
-        private async Task<string> RetrieveDataPayloadFromMavenAsync(int payloadSize, NetworkStream networkStream, byte[] buffer)
-        {
-            var receivedDataChunks = new LinkedList<IEnumerable<byte>>();
-
-            while (payloadSize > 0)
-            {
-                int bytesRead = await networkStream.ReadAsync(buffer, 0, Common.BufferSize).ConfigureAwait(false);
-
-                receivedDataChunks.AddLast(buffer.Take(bytesRead));
-
-                payloadSize -= payloadSize;
-            }
-
-            byte[] receivedData = receivedDataChunks.SelectMany(chunk => chunk).ToArray();
-
-            string data = receivedData.ToUtf8String();
+            // Retrieve data from the maven node
+            string data = await dataAgent.MakeRequestAsync(requestMessage, mavenEndPoint)
+                .ConfigureAwait(false);
 
             return data;
         }
