@@ -1,8 +1,12 @@
 ﻿namespace DCCCommon.Conventions
 {
+    using System.Xml.Linq;
+
     public static class Common
     {
+        public const string DataSource = "data-source";
         public const int BufferSize = 4096;
+        public const int MulticastBufferSize = 8192;
 
         #region ConfigName
 

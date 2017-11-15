@@ -1,9 +1,7 @@
 ﻿namespace DCCNodeCLI.Facade
 {
     using System;
-    using System.Threading.Tasks;
     using CommandLine;
-    using DCCNodeLib.Interfaces;
     using Infrastructure;
     using Options;
 
@@ -17,7 +15,16 @@
 
         static void Main(string[] args)
         {
-            Parser.Default.ParseArguments<IdVerb>(args).WithParsed(RunNodeWithSpecifiedId);
+            args = new[] { "-i", "6" };
+
+            //var arguments = Parser.Default.FormatCommandLine(new NodeOptions
+            //    {
+            //        Id = 6
+            //    }
+            //);
+            //Console.Out.WriteLine("arguments = {0}", arguments);
+
+            Parser.Default.ParseArguments<NodeOptions>(args).WithParsed(RunNodeWithSpecifiedId);
         }
     }
 }

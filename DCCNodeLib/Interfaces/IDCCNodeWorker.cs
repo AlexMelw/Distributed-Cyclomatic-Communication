@@ -7,11 +7,13 @@
 
     public interface IDCCNodeWorker
     {
+        int CurrentNodeId { get; set; }
+        string DataSourcePath { get; set; }
         IPAddress LocalIpAddress { get; set; }
         IPEndPoint MulticastIPEndPoint { get; set; }
         int TcpServingPort { get; set; }
         IEnumerable<IPEndPoint> AdjacentNodesEndPoints { get; set; }
-        Task StartAsync();
+        void Start();
         Task InitAsync(int nodeId);
     }
 }

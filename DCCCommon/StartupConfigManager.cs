@@ -6,6 +6,7 @@
     using System.Linq;
     using System.Net;
     using System.Xml.Linq;
+    using Conventions;
     using EasySharp.NHelpers.CustomExMethods;
     using static Conventions.Common;
 
@@ -231,6 +232,32 @@
         #endregion
 
         #region Node Related
+
+        public string GetNodeDataSourcePath(int nodeId)
+        {
+            string dataSourcePath = string.Empty;
+
+            try
+            {
+                XElement node = GetNodeById(nodeId);
+
+                string dataSourceFileName = string.Empty;
+
+                lock (PadLock)
+                {
+                    dataSourceFileName = node?.Element(DataSource)?.Value ?? string.Empty;
+                }
+
+                string executingPath = AppDomain.CurrentDomain.BaseDirectory;
+                dataSourcePath = Path.Combine(executingPath, dataSourceFileName);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            return dataSourcePath;
+        }
 
         public IPAddress GetNodeLocalIpAddress(int nodeId)
         {

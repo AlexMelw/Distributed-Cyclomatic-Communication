@@ -43,7 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Facade\Program.CommandProcessor.cs" />
-    <Compile Include="Options\IdVerb.cs" />
+    <Compile Include="Options\NodeOptions.cs" />
     <Compile Include="Facade\Program.EntryPoint.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

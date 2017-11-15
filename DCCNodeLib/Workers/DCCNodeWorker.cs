@@ -9,33 +9,50 @@
     using System.Net.Sockets;
     using System.Threading.Tasks;
     using DCCCommon;
-    using DCCCommon.Conventions;
     using DCCCommon.Entities;
     using DCCCommon.Messages;
     using DCCDiscoveryService.Messages;
     using EasySharp.NHelpers.CustomExMethods;
     using EasySharp.NHelpers.CustomWrappers.Networking;
     using Interfaces;
+    using static DCCCommon.Conventions.Common;
 
     public class DCCNodeWorker : IDCCNodeWorker
     {
+        public int CurrentNodeId { get; set; }
+        public string DataSourcePath { get; set; }
         public IPAddress LocalIpAddress { get; set; }
         public IPEndPoint MulticastIPEndPoint { get; set; }
         public int TcpServingPort { get; set; }
         public IEnumerable<IPEndPoint> AdjacentNodesEndPoints { get; set; }
 
-        public async Task StartAsync()
+        public void Start()
         {
+            Console.Out.WriteLine($"Node with id [ {CurrentNodeId} ] is activated.");
+
             Task multicastListenerTask = Task.Run(StartListeningToMulticastPortAsync);
 
             Task tcpListenerTask = Task.Run(StartListeningToTcpServingPortAsync);
 
-            //Task.WaitAll(MulticastListenerTask, TcpListenerTask);
-            await Task.WhenAll(multicastListenerTask, tcpListenerTask).ConfigureAwait(false);
+            Task.WaitAll(multicastListenerTask, tcpListenerTask);
         }
 
         public async Task InitAsync(int nodeId)
         {
+            CurrentNodeId = nodeId;
+
+            string nodeDataSourcePath = StartupConfigManager.Default
+                .GetNodeDataSourcePath(nodeId);
+
+            if (string.IsNullOrWhiteSpace(nodeDataSourcePath))
+            {
+                await Console.Out
+                    .WriteLineAsync("Data Source path hadn't been found in the configuration file.")
+                    .ConfigureAwait(false);
+
+                Environment.Exit(1);
+            }
+
             IPAddress localIpAddress = StartupConfigManager.Default
                 .GetNodeLocalIpAddress(nodeId);
 
@@ -75,7 +92,7 @@
             IEnumerable<IPEndPoint> adjacentNodesEndPoints = StartupConfigManager.Default
                 .GetAdjacentNodesEndPoints(nodeId);
 
-
+            DataSourcePath = nodeDataSourcePath;
             LocalIpAddress = localIpAddress;
             MulticastIPEndPoint = multicastIpEndPoint;
             TcpServingPort = tcpServingPort;
@@ -91,7 +108,7 @@
             //mCastSocket.Close(300);
 
             EndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
-            byte[] buffer = new byte[8192];
+            byte[] buffer = new byte[MulticastBufferSize];
 
             while (true)
             {
@@ -251,7 +268,7 @@
                     break;
                 }
 
-                byte[] buffer = new byte[Common.BufferSize];
+                byte[] buffer = new byte[BufferSize];
 
                 int receivedBytes = await networkStream
                     .ReadAsync(buffer, 0, buffer.Length)
@@ -290,7 +307,7 @@
             {
                 // Message Retransmission
                 requestDataMessage.Propagation = 0;
-                requestDataMessage.DataFormat = Common.Xml;
+                requestDataMessage.DataFormat = Xml;
 
                 var dataAgent = new DataAgent();
 

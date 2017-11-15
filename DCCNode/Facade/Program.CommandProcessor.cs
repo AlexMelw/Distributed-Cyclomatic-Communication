@@ -8,7 +8,7 @@
 
     partial class Program
     {
-        private static void RunNodeWithSpecifiedId(IdVerb options)
+        private static void RunNodeWithSpecifiedId(NodeOptions options)
         {
             Task.Run((Action) (async () =>
             {
@@ -16,7 +16,7 @@
 
                 await nodeWorker.InitAsync(options.Id).ConfigureAwait(false);
 
-                await nodeWorker.StartAsync().ConfigureAwait(false);
+                nodeWorker.Start();
             })).Wait();
         }
     }

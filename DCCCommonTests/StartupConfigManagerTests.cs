@@ -21,6 +21,27 @@
         #region Node Related Tests
 
         [TestCase(1)]
+        public void GetNodeDataSourcePathTest(int nodeId)
+        {
+            // Arrange
+            string filePath = GetStartupConfigPath();
+            string testDataSourcePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Data\Employees.xml"); ;
+
+            Console.Out.WriteLine("testDataSourcePath = {0}", testDataSourcePath);
+
+            StartupConfigManagerTestEx.Default.ConfigFilePath = filePath;
+
+            // Act
+            string dataSourcePath = StartupConfigManagerTestEx.Default
+                .GetNodeDataSourcePath(nodeId);
+
+            Console.Out.WriteLine("dataSourcePath = {0}", dataSourcePath);
+
+            // Assert
+            Assert.That(dataSourcePath, Is.EqualTo(testDataSourcePath));
+        }
+
+        [TestCase(1)]
         public void GetNodeLocalIpAddressTest(int nodeId)
         {
             // Arrange
@@ -229,5 +250,4 @@
             set => base.ConfigFilePath = value;
         }
     }
-
 }
