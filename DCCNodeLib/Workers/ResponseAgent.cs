@@ -15,7 +15,7 @@
         {
             // $C$ Bug Fix - TO BE REVIEWED
             // Let the client initialize the response TcpListener
-            await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+            //await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
 
             // Let's send the response
             var discoveryReceiverEP = new IPEndPoint(clientIpAddress, clientListeningPort);

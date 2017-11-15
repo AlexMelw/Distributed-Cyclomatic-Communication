@@ -28,7 +28,8 @@
 
         public DiscoveryBasedCommunicationMediator()
         {
-            _discoveryResponsePort = RNGUtil.Next(30_000, 60_000);
+            //_discoveryResponsePort = RNGUtil.Next(30_000, 60_000);
+            _discoveryResponsePort = 36_456;
         }
 
         #endregion
@@ -49,13 +50,17 @@
             // JoinMulticastGroup
             var mCastSocket = await CreateMulticastSocketAsync().ConfigureAwait(false);
 
+            // Run in background Discovery Response Listener Service
+            Task<LinkedList<DiscoveryResponseMessage>>
+                getResponseMessagesTask = ReceiveDiscoveryResponseMessagesAsync();
+
             // Discovery Init
             await InitializeDiscoveryProcedureAsync(mCastSocket).ConfigureAwait(false);
 
             // Discovery Receive Response
-            var discoveryResponseMessages = await ReceiveDiscoveryResponseMessagesAsync().ConfigureAwait(false);
+            var discoveryResponseMessages = await getResponseMessagesTask.ConfigureAwait(false);
 
-            // Discovery Proccess Response Results
+            // Discovery Process Response Results
             var mavenEndPoint = await IdentifyMavenNodeAsync(discoveryResponseMessages).ConfigureAwait(false);
 
             return mavenEndPoint;
@@ -89,113 +94,139 @@
 
         private async Task<LinkedList<DiscoveryResponseMessage>> ReceiveDiscoveryResponseMessagesAsync()
         {
+            //var discoveryResponseMessages = await Task.Run(async () =>
+            //{
+
+            //}).ConfigureAwait(false);
+
+            //return discoveryResponseMessages;
+
+            var responseHandlers = new LinkedList<Task<DiscoveryResponseMessage>>();
             var discoveryResponseMessages = new LinkedList<DiscoveryResponseMessage>();
 
-            var tcpListener = new TcpListenerEx(IPAddress.Any, _discoveryResponsePort);
-
-            try
+            Thread thread = new Thread(() =>
             {
-                tcpListener.Start();
+                var tcpListener = new TcpListenerEx(IPAddress.Any, _discoveryResponsePort);
 
-                Console.WriteLine(" [TCP] The local End point is  :" + tcpListener.LocalEndpoint);
-                Console.WriteLine(" [TCP] Waiting for a connection.....\n");
-
-                int timeoutSec = 600;
-                tcpListener.Server.ReceiveTimeout = timeoutSec;
-                TimeSpan timeoutTimeSpan = TimeSpan.FromSeconds(timeoutSec);
-                DateTime listeningStartTime = DateTime.Now;
-
-                //var timer = new Timer(state =>
-                //{
-                //    (state as TcpListenerEx)?.Stop();
-                //}, tcpListener,  1000*5, 1);
-
-                async Task EnforceTcpListeningTimeout()
+                try
                 {
-                    await Console.Out.WriteLineAsync("Start of async timer").ConfigureAwait(false);
-                    await Task.Delay(TimeSpan.FromSeconds(timeoutSec)).ConfigureAwait(false);
-                    tcpListener.Stop();
-                    await Console.Out.WriteLineAsync("Works just fine!").ConfigureAwait(false);
-                    await Console.Out.WriteLineAsync("").ConfigureAwait(false);
-                }
+                    tcpListener.Start();
 
-                Task.Run(EnforceTcpListeningTimeout);
+                    Console.WriteLine(" [TCP] The local End point is  :" + tcpListener.LocalEndpoint);
+                    Console.WriteLine(" [TCP] Waiting for a connection.....\n");
 
+                    int timeoutSec = 600;
+                    TimeSpan timeoutTimeSpan = TimeSpan.FromSeconds(timeoutSec);
+                    DateTime listeningStartTime = DateTime.Now;
 
-                var responseHandlers = new LinkedList<Task<DiscoveryResponseMessage>>();
-
-                while (DateTime.Now.Subtract(listeningStartTime) < timeoutTimeSpan) // is serving continuously while timeout isn't reached
-                {
-                    await Console.Out.WriteLineAsync("Before accepting....").ConfigureAwait(false);
-
-                    TcpClient tcpClient = default;
-                    try
-                    {
-                        tcpClient = tcpListener.AcceptTcpClient();
-                    }
-                    catch (Exception)
-                    {
-                        await Console.Out.WriteLineAsync("Discovery procedure is terminated.").ConfigureAwait(false);
-                        break;
-                    }
-
-                    Console.WriteLine($" [TCP] Connection accepted from: {{ {tcpClient.Client.RemoteEndPoint} }}");
-                    Console.WriteLine($" [TCP] SoketWorker is bound to: {{ {tcpClient.Client.LocalEndPoint} }}");
-
-                    #region Trash
-
-                    //TcpServerWorker.Instance
-                    //    .Init(workerTcpSocket, tcpListener)
-                    //    .StartWorking();
-
-                    //// TODO Unchecked modification
-                    //if (tcpListener.Inactive)
+                    //var timer = new Timer(state =>
                     //{
-                    //    tcpListener.Stop();
+                    //    (state as TcpListenerEx)?.Stop();
+                    //}, tcpListener,  1000*5, 1);
+
+                    //async Task EnforceTcpListeningTimeout1()
+                    //{
+                    //    await Console.Out.WriteLineAsync("Start of async timer").ConfigureAwait(false);
+                    //    await Task.Delay(TimeSpan.FromSeconds(timeoutSec)).ConfigureAwait(false);
+                    //    tcpListener1.Stop();
+                    //    await Console.Out.WriteLineAsync("Works just fine!").ConfigureAwait(false);
+                    //    await Console.Out.WriteLineAsync("").ConfigureAwait(false);
                     //}
 
-                    #endregion
+                    //Task.Run(EnforceTcpListeningTimeout1);
 
-                    Task<DiscoveryResponseMessage> responseHandlerTask = Task.Run(() =>
+                    TcpClient tcpClient = default;
+
+                    while (DateTime.Now.Subtract(listeningStartTime) < timeoutTimeSpan
+                    ) // is serving continuously while timeout isn't reached
                     {
-                        return HandleResponseAsync(tcpListener, tcpClient);
-                    });
-
-                    responseHandlers.AddLast(responseHandlerTask);
-                }
+                        Console.Out.WriteLine("Before accepting....");
 
 
-                foreach (Task<DiscoveryResponseMessage> handlerTask in responseHandlers)
-                {
-                    if (!handlerTask.IsCompleted)
-                    {
-                        // We do not care about the tasks that didn't get the job done
-                        continue;
+                        try
+                        {
+                            tcpClient = tcpListener.AcceptTcpClient();
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            throw;
+                        }
+
+                        //try
+                        //{
+                        //    tcpClient = tcpListener.AcceptTcpClient();
+                        //}
+                        //catch (Exception)
+                        //{
+                        //    await Console.Out.WriteLineAsync("Discovery procedure is terminated.")
+                        //        .ConfigureAwait(false);
+                        //    break;
+                        //}
+
+                        Console.WriteLine($" [TCP] Connection accepted from: {{ {tcpClient.Client.RemoteEndPoint} }}");
+                        Console.WriteLine($" [TCP] SoketWorker is bound to: {{ {tcpClient.Client.LocalEndPoint} }}");
+
+                        #region Trash
+
+                        //TcpServerWorker.Instance
+                        //    .Init(workerTcpSocket, tcpListener)
+                        //    .StartWorking();
+
+                        //// TODO Unchecked modification
+                        //if (tcpListener.Inactive)
+                        //{
+                        //    tcpListener.Stop();
+                        //}
+
+                        #endregion
+
+                        Task<DiscoveryResponseMessage> responseHandlerTask1 = Task.Run(() =>
+                        {
+                            return HandleResponseAsync(tcpListener, tcpClient);
+                        });
+
+                        responseHandlers.AddLast(responseHandlerTask1);
                     }
-
-                    DiscoveryResponseMessage discoveryResponseMessage = await handlerTask.ConfigureAwait(false);
-
-                    discoveryResponseMessages.AddLast(discoveryResponseMessage);
                 }
-            }
-            catch (Exception e)
-            {
-                Console.Out.WriteLine("[TCP] Grave error occured. Searver is dead.");
-                Console.Out.WriteLine($"e = {e.Message}");
-                Debug.WriteLine("[TCP] Grave error occured. Searver is dead.");
-                Debug.WriteLine($"e = {e.Message}");
-                Console.Out.WriteLine("[TCP] PRESS ANY KEY TO QUIT");
-                Console.ReadLine();
-
-                //throw; // TODO Unchecked modification
-            }
-            finally
-            {
-                if (tcpListener.Active)
+                catch (Exception e)
                 {
-                    tcpListener.Stop();
+                    Console.Out.WriteLine("[TCP] Grave error occured. Searver is dead.");
+                    Console.Out.WriteLine($"e = {e.Message}");
+                    Debug.WriteLine("[TCP] Grave error occured. Searver is dead.");
+                    Debug.WriteLine($"e = {e.Message}");
+                    Console.Out.WriteLine("[TCP] PRESS ANY KEY TO QUIT");
+                    Console.ReadLine();
+
+                    //throw; // TODO Unchecked modification
+                    throw;
                 }
+                finally
+                {
+                    if (tcpListener.Active)
+                    {
+                        tcpListener.Stop();
+                    }
+                }
+            });
+
+            thread.Start();
+
+
+            foreach (Task<DiscoveryResponseMessage> handlerTask in responseHandlers)
+            {
+                if (!handlerTask.IsCompleted)
+                {
+                    // We do not care about the tasks that didn't get the job done
+                    continue;
+                }
+
+                DiscoveryResponseMessage discoveryResponseMessage = await handlerTask.ConfigureAwait(false);
+
+                discoveryResponseMessages.AddLast(discoveryResponseMessage);
             }
+
+
             return discoveryResponseMessages;
         }
 
@@ -369,7 +400,6 @@
             //tcpClient.Close();
 
             //return data;
-            
 
             #endregion
 
