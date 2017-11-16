@@ -13,8 +13,9 @@
         public IPAddress ClientLocalIpAddress { get; set; }
         public int ClientReceiveResponseTcpPort { get; set; }
 
-        public async Task<string> MakeRequestAsync(RequestDataMessage requestMessage)
+        public string MakeRequest(RequestDataMessage requestMessage)
         {
+
             throw new NotImplementedException();
 
             // Find the maven node
@@ -24,8 +25,7 @@
             var dataAgent = new DataAgent();
 
             // Retrieve data from the maven node
-            string data = await dataAgent.MakeRequestAsync(requestMessage, mavenEndPoint)
-                .ConfigureAwait(false);
+            string data = dataAgent.MakeRequest(requestMessage, mavenEndPoint);
 
             return data;
 

@@ -14,6 +14,6 @@
         int TcpServingPort { get; set; }
         IEnumerable<IPEndPoint> AdjacentNodesEndPoints { get; set; }
         void Start();
-        Task InitAsync(int nodeId);
+        void Init(int nodeId);
     }
 }

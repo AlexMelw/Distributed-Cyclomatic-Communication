@@ -7,37 +7,34 @@
 
     partial class Program
     {
-        private static async Task ProcessOutgoingRequestAsync(GetVerb options, IDCCClientWorker clientWorker)
+        private static void ProcessOutgoingRequest(GetVerb options, IDCCClientWorker clientWorker)
         {
             try
             {
-                await clientWorker.InitializeAsync().ConfigureAwait(false);
+                clientWorker.Initialize();
 
-                await clientWorker.MakeRequestAsync(
-                        options.DataType,
-                        options.DataFormat.ToString(),
-                        options.FilterCondition,
-                        options.OrderingCondition)
-                    .ConfigureAwait(false);
+                clientWorker.MakeRequest(
+                    options.DataType,
+                    options.DataFormat.ToString(),
+                    options.FilterCondition,
+                    options.OrderingCondition);
 
                 bool valid = true;
 
                 if (!string.IsNullOrWhiteSpace(options.SchemaPath))
                 {
-                    valid = await clientWorker
-                        .ValidateResponseAgainstSchemaAsync(options.SchemaPath)
-                        .ConfigureAwait(false);
+                    valid = clientWorker.ValidateResponseAgainstSchema(options.SchemaPath);
                 }
 
                 if (valid)
                 {
-                    string response = await clientWorker.GetResponseAsync().ConfigureAwait(false);
-                    await Console.Out.WriteLineAsync(response).ConfigureAwait(false);
+                    string response = clientWorker.GetResponse();
+                    Console.Out.WriteLine(response);
                 }
                 else
                 {
                     string dataType = options.DataFormat.ToString();
-                    await Console.Out.WriteLineAsync($"Received {dataType} is NOT valid!").ConfigureAwait(false);
+                    Console.Out.WriteLine($"Received {dataType} is NOT valid!");
                 }
             }
             finally

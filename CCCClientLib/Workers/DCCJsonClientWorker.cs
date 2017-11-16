@@ -7,7 +7,7 @@
 
     public class DCCJsonClientWorker : DCCClientWorker, IDCCJsonClientWorker
     {
-        public override Task<bool> ValidateResponseAgainstSchemaAsync(string schemaPath)
+        public override bool ValidateResponseAgainstSchema(string schemaPath)
         {
             JSchema schema = JSchema.Parse(schemaPath);
 
@@ -15,7 +15,7 @@
 
             bool valid = json.IsValid(schema);
 
-            return Task.FromResult(valid);
+            return valid;
         }
     }
 }

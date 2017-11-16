@@ -7,9 +7,9 @@
     public interface IDCCClientWorker
     {
         ICommunicationMediator CommunicationMediator { get; set; }
-        Task<bool> ValidateResponseAgainstSchemaAsync(string schemaPath);
-        Task MakeRequestAsync(string dataType, string dataFormat, string filterCondition, string orderingCondition);
-        Task<string> GetResponseAsync();
-        Task InitializeAsync();
+        bool ValidateResponseAgainstSchema(string schemaPath);
+        void MakeRequest(string dataType, string dataFormat, string filterCondition, string orderingCondition);
+        string GetResponse();
+        void Initialize();
     }
 }

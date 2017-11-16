@@ -9,7 +9,7 @@
 
     public class ResponseAgent
     {
-        public async Task SendDiscoveryResponseAsync(
+        public void SendDiscoveryResponse(
             DiscoveryResponseMessage responseMessage,
             IPAddress clientIpAddress, int clientListeningPort)
         {
@@ -18,17 +18,21 @@
             //await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
 
             // Let's send the response
-            var discoveryReceiverEP = new IPEndPoint(clientIpAddress, clientListeningPort);
-
-            var tcpSender = new TcpClient(discoveryReceiverEP);
+            var tcpSender = new TcpClient();
+            tcpSender.Connect(clientIpAddress, clientListeningPort);
 
             NetworkStream networkStream = tcpSender.GetStream();
 
             string xmlMessage = responseMessage.SerializeToXml();
 
+            Console.Out.WriteLine("I'm sending to client the following message:");
+            Console.Out.WriteLine(xmlMessage);
+
             byte[] dataToBeSent = xmlMessage.ToUtf8EncodedByteArray();
 
-            await networkStream.WriteAsync(dataToBeSent, 0, dataToBeSent.Length).ConfigureAwait(false);
+            networkStream.Write(dataToBeSent, 0, dataToBeSent.Length);
+
+            Console.Out.WriteLine("Message has been successfully sent to client");
         }
     }
 }

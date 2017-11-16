@@ -10,7 +10,7 @@
 
     public class DCCXmlClientWorker : DCCClientWorker, IDCCXmlClientWorker
     {
-        public override Task<bool> ValidateResponseAgainstSchemaAsync(string schemaPath)
+        public override bool ValidateResponseAgainstSchema(string schemaPath)
         {
             XDocument xDoc = XDocument.Parse(ReceivedData);
 
@@ -24,7 +24,7 @@
             bool result = true;
             xDoc.Validate(schemaSet, (sender, args) => result = false);
 
-            return Task.FromResult(result);
+            return result;
         }
     }
 }

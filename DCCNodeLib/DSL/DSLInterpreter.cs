@@ -21,7 +21,7 @@
 
         #endregion
 
-        public Task<IEnumerable<Employee>> GetDataAsync()
+        public IEnumerable<Employee> GetData()
         {
             IEnumerable<Employee> employees = LocalStorageManager.Default.GetEmployees();
 
@@ -29,7 +29,7 @@
                 .Where(_filterCondition)
                 .OrderBy(_orderingCondition);
 
-            return Task.FromResult(selectedEmployees);
+            return selectedEmployees;
         }
     }
 }

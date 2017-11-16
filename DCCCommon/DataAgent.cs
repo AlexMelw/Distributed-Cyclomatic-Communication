@@ -12,11 +12,14 @@
 
     public class DataAgent
     {
-        public async Task<string> MakeRequestAsync(RequestDataMessage requestMessage, IPEndPoint SourceEndPoint)
+        public string MakeRequest(RequestDataMessage requestMessage, IPEndPoint sourceEndPoint)
         {
+            // $c$ ADD THREAD OR TASK
+
             // Establish connection to the remote node
             var tcpClient = new TcpClient();
-            await tcpClient.ConnectAsync(SourceEndPoint.Address, SourceEndPoint.Port).ConfigureAwait(false);
+            tcpClient.Connect(sourceEndPoint.Address, sourceEndPoint.Port);
+
             NetworkStream networkStream = tcpClient.GetStream();
 
             // Prepare request message to be sent
@@ -32,16 +35,15 @@
             #endregion
 
             // Send request message
-            await networkStream.WriteAsync(dataToBeSent, 0, dataToBeSent.Length).ConfigureAwait(false);
+            networkStream.Write(dataToBeSent, 0, dataToBeSent.Length);
 
             // Receive meta-data response
             byte[] buffer = new byte[Common.BufferSize];
-            int bytesRead = await networkStream.ReadAsync(buffer, 0, Common.BufferSize).ConfigureAwait(false);
+            int bytesRead = networkStream.Read(buffer, 0, Common.BufferSize);
             int payloadSize = BitConverter.ToInt32(buffer.Take(bytesRead).ToArray(), 0);
 
             // Get Payload Data from maven
-            string data = await RetrieveDataPayloadFromMavenAsync(payloadSize, networkStream, buffer)
-                .ConfigureAwait(false);
+            string data = RetrieveDataPayloadFromMaven(payloadSize, networkStream, buffer);
 
             #region Trash
 
@@ -55,14 +57,14 @@
             return data;
         }
 
-        private async Task<string> RetrieveDataPayloadFromMavenAsync(int payloadSize, NetworkStream networkStream,
+        private string RetrieveDataPayloadFromMaven(int payloadSize, NetworkStream networkStream,
             byte[] buffer)
         {
             var receivedDataChunks = new LinkedList<IEnumerable<byte>>();
 
             while (payloadSize > 0)
             {
-                int bytesRead = await networkStream.ReadAsync(buffer, 0, Common.BufferSize).ConfigureAwait(false);
+                int bytesRead = networkStream.Read(buffer, 0, Common.BufferSize);
 
                 receivedDataChunks.AddLast(buffer.Take(bytesRead));
 

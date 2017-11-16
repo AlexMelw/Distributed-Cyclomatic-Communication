@@ -1,6 +1,7 @@
 ﻿namespace DCCClientCLI.Facade
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using DCCClientLib.Interfaces;
     using EasySharp.NHelpers.CustomExMethods;
@@ -11,22 +12,27 @@
     {
         private static void ProcessGetXmlCommand(GetXmlVerb options)
         {
-            Task.Run((Action) (async () =>
-            {
-                IDCCClientWorker clientWorker = IoC.Resolve<IDCCXmlClientWorker>();
+            //Task.Run((Action) (async () =>
+            //{
 
-                await ProcessOutgoingRequestAsync(options, clientWorker).ConfigureAwait(false);
-            })).Wait();
+            //})).Wait();
+
+
+            IDCCClientWorker clientWorker = IoC.Resolve<IDCCXmlClientWorker>();
+
+            ProcessOutgoingRequest(options, clientWorker);
         }
 
         private static void ProcessGetJsonCommand(GetJsonVerb options)
         {
-            Task.Run((Action) (async () =>
-            {
-                IDCCClientWorker clientWorker = IoC.Resolve<IDCCJsonClientWorker>();
+            //Task.Run((Action) (async () =>
+            //{
+            //})).Wait();
 
-                await ProcessOutgoingRequestAsync(options, clientWorker).ConfigureAwait(false);
-            })).Wait();
+            IDCCClientWorker clientWorker = IoC.Resolve<IDCCJsonClientWorker>();
+
+            ProcessOutgoingRequest(options, clientWorker);
+
         }
     }
 }

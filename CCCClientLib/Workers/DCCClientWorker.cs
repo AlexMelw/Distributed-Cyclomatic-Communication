@@ -15,9 +15,9 @@
 
         public ICommunicationMediator CommunicationMediator { get; set; }
 
-        public abstract Task<bool> ValidateResponseAgainstSchemaAsync(string schemaPath);
+        public abstract bool ValidateResponseAgainstSchema(string schemaPath);
 
-        public async Task MakeRequestAsync(string dataType, string dataFormat, string filterCondition, string orderingCondition)
+        public void MakeRequest(string dataType, string dataFormat, string filterCondition, string orderingCondition)
         {
             var requestMessage = new RequestDataMessage
             {
@@ -28,55 +28,50 @@
                 OrderingCondition = orderingCondition
             };
 
-            ReceivedData = await CommunicationMediator.MakeRequestAsync(requestMessage).ConfigureAwait(false);
+            ReceivedData = CommunicationMediator.MakeRequest(requestMessage);
         }
 
-        public Task<string> GetResponseAsync() => Task.FromResult(ReceivedData);
+        public string GetResponse() => ReceivedData;
 
         //public void Dispose() => CommunicationMediator.Dispose();
 
         #region Client Worker Initialization
 
-        public async Task InitializeAsync()
+        public void Initialize()
         {
             bool discoveryIsUsed = StartupConfigManager.Default.ExistsKey(Client);
             bool proxyIsUsed = StartupConfigManager.Default.ExistsKey(Proxy);
 
             if (discoveryIsUsed)
             {
-                await ConfigureWithDiscoveryServiceSettingsAsync().ConfigureAwait(false);
+                ConfigureWithDiscoveryServiceSettings();
 
                 return;
             }
 
             if (proxyIsUsed)
             {
-                await ConfigureWithProxyNodeSettingsAsync().ConfigureAwait(false);
+                ConfigureWithProxyNodeSettings();
 
                 return;
             }
 
-            await Console.Out
-                .WriteLineAsync(
-                    "Cannot operate without a proper startup configuration. " +
-                    "Neither discovery service was configured, nor proxy.")
-                .ConfigureAwait(false);
+            Console.Out.WriteLine("Cannot operate without a proper startup configuration. " +
+                                  "Neither discovery service was configured, nor proxy.");
+            
 
             Environment.Exit(1);
         }
 
         #region Client Worker Configuration
 
-        private async Task ConfigureWithDiscoveryServiceSettingsAsync()
+        private void ConfigureWithDiscoveryServiceSettings()
         {
             IPAddress localIpAddress = StartupConfigManager.Default.GetClientLocalIpAddress();
 
             if (localIpAddress == null)
             {
-                await Console.Out
-                    .WriteLineAsync("Local IP Address is not found in the configuration file.")
-                    .ConfigureAwait(false);
-
+                Console.Out.WriteLine("Local IP Address is not found in the configuration file.");
                 Environment.Exit(1);
             }
 
@@ -84,10 +79,7 @@
 
             if (multicastIpEndPoint == null)
             {
-                await Console.Out
-                    .WriteLineAsync("Multicast IP Address and port are not found in the configuration file.")
-                    .ConfigureAwait(false);
-
+                Console.Out.WriteLine("Multicast IP Address and port are not found in the configuration file.");
                 Environment.Exit(1);
             }
 
@@ -95,10 +87,7 @@
 
             if (responseTcpPort == -1)
             {
-                await Console.Out
-                    .WriteLineAsync("Discovery response TCP port is not indicated within configuration file.")
-                    .ConfigureAwait(false);
-
+                Console.Out.WriteLine("Discovery response TCP port is not indicated within configuration file.");
                 Environment.Exit(1);
             }
 
@@ -110,16 +99,13 @@
             };
         }
 
-        private async Task ConfigureWithProxyNodeSettingsAsync()
+        private void ConfigureWithProxyNodeSettings()
         {
             IPAddress localIpAddress = StartupConfigManager.Default.GetClientLocalIpAddress();
 
             if (localIpAddress == null)
             {
-                await Console.Out
-                    .WriteLineAsync("Local IP Address is not found in the configuration file.")
-                    .ConfigureAwait(false);
-
+                Console.Out.WriteLine("Local IP Address is not found in the configuration file.");
                 Environment.Exit(1);
             }
 
@@ -127,10 +113,7 @@
 
             if (responseTcpPort == -1)
             {
-                await Console.Out
-                    .WriteLineAsync("Discovery response TCP port is not indicated within configuration file.")
-                    .ConfigureAwait(false);
-
+                Console.Out.WriteLine("Discovery response TCP port is not indicated within configuration file.");
                 Environment.Exit(1);
             }
 
@@ -138,10 +121,7 @@
 
             if (proxyEndPoint == null)
             {
-                await Console.Out
-                    .WriteLineAsync("Proxy IP Address and/or port are not found in the configuration file.")
-                    .ConfigureAwait(false);
-
+                Console.Out.WriteLine("Proxy IP Address and/or port are not found in the configuration file.");
                 Environment.Exit(1);
             }
 

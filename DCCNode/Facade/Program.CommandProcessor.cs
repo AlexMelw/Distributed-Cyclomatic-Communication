@@ -16,7 +16,7 @@
             {
                 var nodeWorker = IoC.Resolve<IDCCNodeWorker>();
 
-                await nodeWorker.InitAsync(options.Id).ConfigureAwait(false);
+                nodeWorker.Init(options.Id);
 
                 nodeWorker.Start();
             })).Wait();
