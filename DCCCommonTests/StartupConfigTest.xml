@@ -5,7 +5,7 @@
 
   <client>
 
-    <local-ipAddress>127.0.0.1</local-ipAddress>
+    <!--<local-ipAddress>127.0.0.1</local-ipAddress>-->
 
     <discovery>
       <response-tcpPort>27001</response-tcpPort>

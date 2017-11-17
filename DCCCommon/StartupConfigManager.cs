@@ -71,24 +71,24 @@
             return connectedNodesEndPoints;
         }
 
-        public IPAddress GetClientLocalIpAddress()
-        {
-            string localIpAddressString;
+        //public IPAddress GetClientLocalIpAddress()
+        //{
+        //    string localIpAddressString;
 
-            lock (PadLock)
-            {
-                XElement root = XElement.Load(ConfigFilePath);
+        //    lock (PadLock)
+        //    {
+        //        XElement root = XElement.Load(ConfigFilePath);
 
-                localIpAddressString = root.Element(Client)
-                                           ?.Element(LocalIpAddress)
-                                           ?.Value
-                                       ?? string.Empty;
-            }
+        //        localIpAddressString = root.Element(Client)
+        //                                   ?.Element(LocalIpAddress)
+        //                                   ?.Value
+        //                               ?? string.Empty;
+        //    }
 
-            IPAddress.TryParse(localIpAddressString, out IPAddress localIpAddress);
+        //    IPAddress.TryParse(localIpAddressString, out IPAddress localIpAddress);
 
-            return localIpAddress;
-        }
+        //    return localIpAddress;
+        //}
 
         public int GetDiscoveryClientResponseTcpPort()
         {
@@ -259,29 +259,29 @@
             return dataSourcePath;
         }
 
-        public IPAddress GetNodeLocalIpAddress(int nodeId)
-        {
-            string localIpAddressString = string.Empty;
+        //public IPAddress GetNodeLocalIpAddress(int nodeId)
+        //{
+        //    string localIpAddressString = string.Empty;
 
-            try
-            {
-                XElement node = GetNodeById(nodeId);
+        //    try
+        //    {
+        //        XElement node = GetNodeById(nodeId);
 
-                lock (PadLock)
-                {
-                    localIpAddressString = node?.Element(LocalIpAddress)?.Value
-                                           ?? string.Empty;
-                }
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
+        //        lock (PadLock)
+        //        {
+        //            localIpAddressString = node?.Element(LocalIpAddress)?.Value
+        //                                   ?? string.Empty;
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        // ignored
+        //    }
 
-            IPAddress.TryParse(localIpAddressString, out IPAddress localIpAddress);
+        //    IPAddress.TryParse(localIpAddressString, out IPAddress localIpAddress);
 
-            return localIpAddress;
-        }
+        //    return localIpAddress;
+        //}
 
         public int GetNodeTcpServingPort(int nodeId)
         {
@@ -316,9 +316,9 @@
             return tcpServingPort;
         }
 
-        public IEnumerable<IPEndPoint> GetAdjacentNodesEndPoints(int nodeId)
+        public IEnumerable<(int, IPEndPoint)> GetAdjacentNodesEndPointsWithIDs(int nodeId)
         {
-            var remoteNodesEndPoints = new LinkedList<IPEndPoint>();
+            var remoteNodesEndPoints = new LinkedList<(int, IPEndPoint)>();
 
             try
             {
@@ -334,13 +334,18 @@
                         string remotePortString = adjacentNode?.Element(RemotePort)?.Value
                                                   ?? string.Empty;
 
+                        string adjacentNodeId = adjacentNode?.Attribute(Id)?.Value
+                                ?? string.Empty;
+
                         try
                         {
                             var ipEndPoint = new IPEndPoint(
                                 IPAddress.Parse(remoteIpAddressString),
                                 int.Parse(remotePortString));
 
-                            remoteNodesEndPoints.AddLast(ipEndPoint);
+                            int id = int.Parse(adjacentNodeId);
+
+                            remoteNodesEndPoints.AddLast((id, ipEndPoint));
                         }
                         catch (Exception)
                         {

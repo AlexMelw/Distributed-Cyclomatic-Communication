@@ -20,7 +20,7 @@
         {
             Console.Title = "DIS Client";
 
-            args = new[] { "get-json", "-t", "Employee", "-f", "Id > 10 and Id <= 20", "-o", "Id descending" };
+            args = new[] { "get-json", "-d", "Employee", "-f", "Id > 10 and Id <= 20", "-o", "Id descending", "-t", "10" };
 
             Parser.Default.ParseArguments<GetXmlVerb, GetJsonVerb>(args)
                 .WithParsed<GetXmlVerb>(ProcessGetXmlCommand)

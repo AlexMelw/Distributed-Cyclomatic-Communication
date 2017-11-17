@@ -17,7 +17,7 @@
 
         public abstract bool ValidateResponseAgainstSchema(string schemaPath);
 
-        public void MakeRequest(string dataType, string dataFormat, string filterCondition, string orderingCondition)
+        public void MakeRequest(string dataType, string dataFormat, string filterCondition, string orderingCondition, int discoveryTimeout)
         {
             var requestMessage = new RequestDataMessage
             {
@@ -28,7 +28,7 @@
                 OrderingCondition = orderingCondition
             };
 
-            ReceivedData = CommunicationMediator.MakeRequest(requestMessage);
+            ReceivedData = CommunicationMediator.MakeRequest(requestMessage, discoveryTimeout);
         }
 
         public string GetResponse() => ReceivedData;
@@ -67,13 +67,13 @@
 
         private void ConfigureWithDiscoveryServiceSettings()
         {
-            IPAddress localIpAddress = StartupConfigManager.Default.GetClientLocalIpAddress();
+            //IPAddress localIpAddress = StartupConfigManager.Default.GetClientLocalIpAddress();
 
-            if (localIpAddress == null)
-            {
-                Console.Out.WriteLine("Local IP Address is not found in the configuration file.");
-                Environment.Exit(1);
-            }
+            //if (localIpAddress == null)
+            //{
+            //    Console.Out.WriteLine("Local IP Address is not found in the configuration file.");
+            //    Environment.Exit(1);
+            //}
 
             IPEndPoint multicastIpEndPoint = StartupConfigManager.Default.GetDiscoveryClientMulticastIPEndPoint();
 
@@ -93,21 +93,20 @@
 
             CommunicationMediator = new DiscoveryBasedCommunicationMediator
             {
-                ClientLocalIpAddress = localIpAddress,
-                MulticastIPEndPoint = multicastIpEndPoint,
-                ClientReceiveResponseTcpPort = responseTcpPort
+                MulticastIPEndPoint = multicastIpEndPoint
+                //ClientReceiveResponseTcpPort = responseTcpPort
             };
         }
 
         private void ConfigureWithProxyNodeSettings()
         {
-            IPAddress localIpAddress = StartupConfigManager.Default.GetClientLocalIpAddress();
+            //IPAddress localIpAddress = StartupConfigManager.Default.GetClientLocalIpAddress();
 
-            if (localIpAddress == null)
-            {
-                Console.Out.WriteLine("Local IP Address is not found in the configuration file.");
-                Environment.Exit(1);
-            }
+            //if (localIpAddress == null)
+            //{
+            //    Console.Out.WriteLine("Local IP Address is not found in the configuration file.");
+            //    Environment.Exit(1);
+            //}
 
             int responseTcpPort = StartupConfigManager.Default.GetDiscoveryClientResponseTcpPort();
 
@@ -128,7 +127,7 @@
 
             CommunicationMediator = new ProxyBasedCommunicationMediator
             {
-                ClientLocalIpAddress = localIpAddress,
+                //ClientLocalIpAddress = localIpAddress,
                 ClientReceiveResponseTcpPort = responseTcpPort,
                 ProxyEndPoint = proxyEndPoint
             };

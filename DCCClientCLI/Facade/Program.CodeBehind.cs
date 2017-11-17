@@ -17,7 +17,8 @@
                     options.DataType,
                     options.DataFormat.ToString(),
                     options.FilterCondition,
-                    options.OrderingCondition);
+                    options.OrderingCondition,
+                    options.Timeout);
 
                 bool valid = true;
 

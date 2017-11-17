@@ -4,7 +4,7 @@
 
     abstract class GetVerb
     {
-        [Option('t', "data-type", Required = true,
+        [Option('d', "data-type", Required = true,
             HelpText = "Specify the type to be retrieved.")]
         public string DataType { get; set; }
 
@@ -15,6 +15,10 @@
         [Option('o', "order-by", Required = false,
             HelpText = "Indicate key/keys to apply ordering by.")]
         public string OrderingCondition { get; set; }
+
+        [Option('t', "timeout", Required = false, Default = 10,
+            HelpText = "Sets timeout for nodes discovery process.")]
+        public int Timeout { get; set; }
 
         [Option('s', "schema", Required = false,
             HelpText = "Schema file to validate data against.")]

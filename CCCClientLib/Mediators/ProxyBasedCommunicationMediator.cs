@@ -13,7 +13,7 @@
         public IPAddress ClientLocalIpAddress { get; set; }
         public int ClientReceiveResponseTcpPort { get; set; }
 
-        public string MakeRequest(RequestDataMessage requestMessage)
+        public string MakeRequest(RequestDataMessage requestMessage, int discoveryTimeout)
         {
 
             throw new NotImplementedException();
@@ -25,7 +25,7 @@
             var dataAgent = new DataAgent();
 
             // Retrieve data from the maven node
-            string data = dataAgent.MakeRequest(requestMessage, mavenEndPoint);
+            string data = dataAgent.MakeRequest(requestMessage, mavenEndPoint, default); // $c$ to be reviewed
 
             return data;
 

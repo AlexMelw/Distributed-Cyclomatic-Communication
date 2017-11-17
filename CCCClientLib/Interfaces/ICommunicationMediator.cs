@@ -4,6 +4,6 @@
 
     public interface ICommunicationMediator
     {
-        string MakeRequest(RequestDataMessage requestMessage);
+        string MakeRequest(RequestDataMessage requestMessage, int discoveryTimeout);
     }
 }

@@ -7,7 +7,7 @@
     using DCCDiscoveryService.Messages;
     using EasySharp.NHelpers.CustomExMethods;
 
-    public class ResponseAgent
+    public class DiscoveryResponseAgent
     {
         public void SendDiscoveryResponse(
             DiscoveryResponseMessage responseMessage,

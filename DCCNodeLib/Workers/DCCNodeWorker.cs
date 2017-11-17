@@ -1,6 +1,5 @@
 ﻿namespace DCCNodeLib.Workers
 {
-    using DSL;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -10,29 +9,34 @@
     using System.Threading;
     using System.Threading.Tasks;
     using DCCCommon;
+    using DCCCommon.Conventions;
     using DCCCommon.Entities;
     using DCCCommon.Messages;
     using DCCDiscoveryService.Messages;
+    using DSL;
     using EasySharp.NHelpers.CustomExMethods;
     using EasySharp.NHelpers.CustomWrappers.Networking;
     using Interfaces;
-    using static DCCCommon.Conventions.Common;
 
     public class DCCNodeWorker : IDCCNodeWorker
     {
+        private IPAddress _localIpAddress;
         public int CurrentNodeId { get; set; }
+
         public string DataSourcePath { get; set; }
-        public IPAddress LocalIpAddress { get; set; }
+
+        //public IPAddress LocalIpAddress { get; set; }
         public IPEndPoint MulticastIPEndPoint { get; set; }
+
         public int TcpServingPort { get; set; }
-        public IEnumerable<IPEndPoint> AdjacentNodesEndPoints { get; set; }
+        //public IEnumerable<IPEndPoint> AdjacentNodesEndPoints { get; set; }
 
         public void Start()
         {
             Console.Out.WriteLine($"Node with id [ {CurrentNodeId} ] is activated.");
 
             new Thread(StartListeningToMulticastPort).Start();
-            //new Thread(StartListeningToTcpServingPort).Start();
+            new Thread(StartListeningToTcpServingPort).Start();
 
 
             //Task tcpListenerTask = Task.Run(StartListeningToTcpServingPortAsync);
@@ -52,14 +56,17 @@
                 Environment.Exit(1);
             }
 
-            IPAddress localIpAddress = StartupConfigManager.Default
-                .GetNodeLocalIpAddress(nodeId);
+            //IPAddress localIpAddress = StartupConfigManager.Default
+            //    .GetNodeLocalIpAddress(nodeId);
 
-            if (localIpAddress == null)
-            {
-                Console.Out.WriteLine("Local IP Address is not found in the configuration file.");
-                Environment.Exit(1);
-            }
+            //if (localIpAddress == null)
+            //{
+            //    Console.Out.WriteLine("Local IP Address is not found in the configuration file.");
+            //    Environment.Exit(1);
+            //}
+
+            _localIpAddress = Dns.GetHostAddresses(Dns.GetHostName()).FirstOrDefault();
+
 
             IPEndPoint multicastIpEndPoint = StartupConfigManager.Default
                 .GetNodeMulticastIPEndPoint(nodeId);
@@ -79,15 +86,17 @@
                 Environment.Exit(1);
             }
 
-            IEnumerable<IPEndPoint> adjacentNodesEndPoints = StartupConfigManager.Default
-                .GetAdjacentNodesEndPoints(nodeId);
+            IEnumerable<(int, IPEndPoint)> adjacentNodesEndPointsWithIDs = StartupConfigManager.Default
+                .GetAdjacentNodesEndPointsWithIDs(nodeId);
 
             DataSourcePath = nodeDataSourcePath;
-            LocalIpAddress = localIpAddress;
+            //LocalIpAddress = localIpAddress;
             MulticastIPEndPoint = multicastIpEndPoint;
             TcpServingPort = tcpServingPort;
-            AdjacentNodesEndPoints = adjacentNodesEndPoints;
+            AdjacentNodesEndPointsWithIDs = adjacentNodesEndPointsWithIDs;
         }
+
+        public IEnumerable<(int, IPEndPoint)> AdjacentNodesEndPointsWithIDs { get; set; }
 
         private void StartListeningToMulticastPort()
         {
@@ -101,7 +110,7 @@
             Console.Out.WriteLine($"Start listening to {MulticastIPEndPoint}");
 
             EndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
-            byte[] buffer = new byte[MulticastBufferSize];
+            byte[] buffer = new byte[Common.MulticastBufferSize];
 
             while (true)
             {
@@ -121,12 +130,12 @@
                 SocketType.Dgram,
                 ProtocolType.Udp);
 
-            var localEndPoint = new IPEndPoint(LocalIpAddress, MulticastIPEndPoint.Port);
+            var localEndPoint = new IPEndPoint(_localIpAddress, MulticastIPEndPoint.Port);
 
             mCastSocket.Bind(localEndPoint);
 
             MulticastOption multicastOption =
-                new MulticastOption(MulticastIPEndPoint.Address, LocalIpAddress);
+                new MulticastOption(MulticastIPEndPoint.Address, _localIpAddress);
 
             mCastSocket.SetSocketOption(
                 SocketOptionLevel.IP,
@@ -153,16 +162,18 @@
 
             // GENERATE RESPONSE
 
-            var responseAgent = new ResponseAgent();
+            var responseAgent = new DiscoveryResponseAgent();
 
             var responseMessage = new DiscoveryResponseMessage
             {
-                IPAddress = LocalIpAddress.ToString(), // $c$ to be changed
+                //IPAddress = LocalIpAddress.ToString(), // $c$ to be changed
+                IPAddress = _localIpAddress.ToString(),
                 ListeningPort = TcpServingPort,
-                NodeConnectionNum = AdjacentNodesEndPoints.Count()
+                NodeConnectionNum = AdjacentNodesEndPointsWithIDs.Count()
             };
 
-            Console.Out.WriteLine($"Client said that he wants to get DISCOVERY Response at {clientIpAddress}:{clientListeningPort}");
+            Console.Out.WriteLine(
+                $"Client said that he wants to get DISCOVERY Response at {clientIpAddress}:{clientListeningPort}");
 
             responseAgent.SendDiscoveryResponse(responseMessage, clientIpAddress, clientListeningPort);
         }
@@ -193,10 +204,10 @@
                     //    break;
                     //}
 
-                    TcpClient tcpClient = tcpListener.AcceptTcpClient();
+                    Socket workerSoket = tcpListener.AcceptSocket();
 
-                    Console.WriteLine($" [TCP] Connection accepted from: {{ {tcpClient.Client.RemoteEndPoint} }}");
-                    Console.WriteLine($" [TCP] SoketWorker is bound to: {{ {tcpClient.Client.LocalEndPoint} }}");
+                    Console.WriteLine($" [TCP] Connection accepted from: {{ {workerSoket.RemoteEndPoint} }}");
+                    Console.WriteLine($" [TCP] SoketWorker is bound to: {{ {workerSoket.LocalEndPoint} }}");
 
                     #region Trash
 
@@ -214,12 +225,12 @@
 
                     //Task<DiscoveryResponseMessage> responseHandlerTask = Task.Run(() =>
                     //{
-                    //    return HandleResponseAsync(tcpListener, tcpClient);
+                    //    return HandleRequestAsync(tcpListener, workerSoket);
                     //});
 
                     //responseHandlers.AddLast(responseHandlerTask);
 
-                    new Thread(() => HandleRequest(tcpListener, tcpClient)).Start();
+                    new Thread(() => HandleRequest(tcpListener, workerSoket)).Start();
                 }
 
 
@@ -256,13 +267,25 @@
             }
         }
 
-        private void HandleRequest(TcpListenerEx tcpListener, TcpClient tcpWorker)
+        private void HandleRequest(TcpListenerEx tcpListener, Socket workerSocket)
         {
-            //Console.Out.WriteLine($" [TCP]   >> SERVER WORKER IS TALKING TO {tcpWorker.Client.RemoteEndPoint}");
+            Console.Out.WriteLine($" [TCP]   >> SERVER WORKER IS TALKING TO {workerSocket.RemoteEndPoint}");
 
-            //LinkedList<IEnumerable<byte>> receivedBinaryData = new LinkedList<IEnumerable<byte>>();
+            LinkedList<IEnumerable<byte>> receivedBinaryData = new LinkedList<IEnumerable<byte>>();
 
-            //NetworkStream networkStream = tcpWorker.GetStream();
+            //NetworkStream networkStream = workerSoket.GetStream();
+
+            byte[] buffer = new byte[Common.UnicastBufferSize];
+
+            int receivedBytes = workerSocket.Receive(buffer);
+
+            byte[] binaryMessage = buffer.Take(receivedBytes).ToArray();
+
+            string xmlMessage = binaryMessage.ToUtf8String();
+
+            var requestDataMessage = xmlMessage.DeserializeTo<RequestDataMessage>();
+
+            #region Trash
 
             //while (true)
             //{
@@ -270,89 +293,87 @@
             //    {
             //        break;
             //    }
-
             //    byte[] buffer = new byte[BufferSize];
-
             //    int receivedBytes = networkStream.Read(buffer, 0, buffer.Length);
-
             //    if (receivedBytes == 0)
             //    {
             //        Console.Out.WriteLine($@" [TCP]   >> SERVER WORKER says: ""No bytes received. Connection closed.""");
             //        break;
             //    }
-
             //    receivedBinaryData.AddLast(buffer.Take(receivedBytes));
             //}
 
-            //tcpWorker.Close();
+            #endregion
 
-            //byte[] binaryMessage = receivedBinaryData.SelectMany(batch => batch).ToArray();
+            var dslInterpreter = new DSLInterpreter(requestDataMessage);
 
-            //string xmlMessage = binaryMessage.ToUtf8String();
+            IEnumerable<Employee> currentNodeEmployees = dslInterpreter.GetData();
 
-            //var requestDataMessage = xmlMessage.DeserializeTo<RequestDataMessage>();
+            var employees = new List<Employee>(currentNodeEmployees);
+
+            var dataAgentRequestTasks = new LinkedList<Task<string>>();
+
+            if (requestDataMessage.Propagation > 0)
+            {
+                // Message Retransmission
+                requestDataMessage.Propagation = 0;
+                requestDataMessage.DataFormat = Common.Xml;
+
+                var dataAgent = new DataAgent();
+
+                foreach (var idEpPair in AdjacentNodesEndPointsWithIDs)
+                {
+                    Task<string> requestDataTask = Task.Run(() =>
+                    {
+                        string xmlData = dataAgent.MakeRequest(
+                            requestDataMessage,
+                            idEpPair.Item2, 
+                            idEpPair.Item1.ToString());
+
+                        return xmlData;
+                    });
+
+                    dataAgentRequestTasks.AddLast(requestDataTask);
+                }
+
+            }
+
+            while (dataAgentRequestTasks.Count > 0)
+            {
+                // Identify the first task that completes.
+                Task<string> firstCompletedTask = Task.WhenAny(dataAgentRequestTasks).Result;
+
+                // Remove the selected task from the list so that you don't 
+                // process it more than once.
+                dataAgentRequestTasks.Remove(firstCompletedTask);
+
+                // Await the completed task.
+                string xmlData = firstCompletedTask.Result;
+
+                var employeesContainer = xmlData.DeserializeTo<EmployeesRoot>();
+
+                employees.AddRange(employeesContainer.EmployeeArray);
+            }
 
 
-            //var dslInterpreter = new DSLInterpreter(requestDataMessage);
+            var dslConverter = new DSLConverter(requestDataMessage);
 
-            //IEnumerable<Employee> currentNodeEmployees = dslInterpreter.GetData();
+            string serializedData = dslConverter.TransformDataToRequiredFormat(employees);
 
-            //var employees = new List<Employee>(currentNodeEmployees);
+            // To be returned
 
-            //var dataAgentRequestTasks = new LinkedList<Task<string>>();
+            byte[] dataToBeSent = serializedData.ToUtf8EncodedByteArray();
 
-            //if (requestDataMessage.Propagation > 0)
-            //{
-            //    // Message Retransmission
-            //    requestDataMessage.Propagation = 0;
-            //    requestDataMessage.DataFormat = Xml;
+            IEnumerable<IEnumerable<byte>> chunks = dataToBeSent.ChunkBy(Common.UnicastBufferSize);
 
-            //    var dataAgent = new DataAgent();
+            foreach (IEnumerable<byte> chunk in chunks)
+            {
+                byte[] chunkBuffer = chunk.ToArray();
+                workerSocket.Send(chunkBuffer, chunkBuffer.Length, SocketFlags.Partial);
+            }
 
-            //    foreach (IPEndPoint nodeEndPoint in AdjacentNodesEndPoints)
-            //    {
-            //        Task<string> dataRequestTask = dataAgent.MakeRequestAsync(requestDataMessage, nodeEndPoint);
-
-            //        dataAgentRequestTasks.AddLast(dataRequestTask);
-            //    }
-            //}
-
-            //while (dataAgentRequestTasks.Count > 0)
-            //{
-            //    foreach (Task<string> dataRequestTask in dataAgentRequestTasks)
-            //    {
-            //        // Identify the first task that completes.
-            //        Task<string> firstCompletedTask = await Task.WhenAny(dataAgentRequestTasks).ConfigureAwait(false);
-
-            //        // Remove the selected task from the list so that you don't 
-            //        // process it more than once.
-            //        dataAgentRequestTasks.Remove(firstCompletedTask);
-
-            //        // Await the completed task.
-            //        string xmlData = await firstCompletedTask.ConfigureAwait(false);
-
-            //        var employeesContainer = xmlData.DeserializeTo<EmployeesRoot>();
-
-            //        employees.AddRange(employeesContainer.EmployeeArray);
-            //    }
-            //}
-
-
-            //var dslConverter = new DSLConverter(requestDataMessage);
-
-            //string serializedData = await dslConverter
-            //    .TransfromDataToRequiredFromatAsync(employees)
-            //    .ConfigureAwait(false);
-
-            //// To be returned
-
-            //byte[] dataToBeSent = serializedData.ToUtf8EncodedByteArray();
-
-            //await networkStream.WriteAsync(dataToBeSent, 0, dataToBeSent.Length).ConfigureAwait(false);
-
-            //tcpWorker.Close();
+            workerSocket.Close();
         }
-
         //public void Dispose() { }
     }
 }

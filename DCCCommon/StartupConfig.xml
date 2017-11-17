@@ -5,7 +5,7 @@
 
   <client>
 
-    <local-ipAddress>127.0.0.1</local-ipAddress>
+    <!--<local-ipAddress>127.0.0.1</local-ipAddress>-->
 
     <discovery>
       <response-tcpPort>27001</response-tcpPort>
@@ -21,29 +21,29 @@
   </client>
 
   <node id="1">
-    
+
     <local-ipAddress>127.0.0.1</local-ipAddress>
-    
+
     <multicast-ipAddress>228.1.2.3</multicast-ipAddress>
     <multicast-port>27549</multicast-port>
-    
+
     <tcpserving-port>28001</tcpserving-port>
     <data-source>Data\Employees.xml</data-source>
-    
+
     <adjacent-nodes>
-      
+
       <remote-node id="2">
         <remote-ipAddress>127.0.0.1</remote-ipAddress>
         <remote-tcpPort>28002</remote-tcpPort>
       </remote-node>
-      
+
       <remote-node id="5">
         <remote-ipAddress>127.0.0.1</remote-ipAddress>
         <remote-tcpPort>28005</remote-tcpPort>
       </remote-node>
-    
+
     </adjacent-nodes>
-  
+
   </node>
   <node id="2">
     <local-ipAddress>127.0.0.1</local-ipAddress>

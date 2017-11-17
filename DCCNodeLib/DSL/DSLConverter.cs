@@ -22,18 +22,18 @@
 
         #endregion
 
-        public async Task<string> TransfromDataToRequiredFromatAsync(IEnumerable<Employee> employees)
+        public string TransformDataToRequiredFormat(IEnumerable<Employee> employees)
         {
             string serializedData;
 
             switch (_dataFormat)
             {
                 case Common.Xml:
-                    serializedData = await SerializeToXmlAsync(employees).ConfigureAwait(false);
+                    serializedData = SerializeToXml(employees);
                     break;
 
                 case Common.Json:
-                    serializedData = await SerializeToJsonAsync(employees).ConfigureAwait(false);
+                    serializedData = SerializeToJson(employees);
                     break;
 
                 default:
@@ -45,16 +45,16 @@
             return serializedData;
         }
 
-        private Task<string> SerializeToJsonAsync(IEnumerable<Employee> employees)
+        private string SerializeToJson(IEnumerable<Employee> employees)
         {
             dynamic dynamicWrapper = new { Employees = employees };
 
             string serializedData = JsonConvert.SerializeObject(dynamicWrapper, Formatting.Indented);
 
-            return Task.FromResult(serializedData);
+            return serializedData;
         }
 
-        private Task<string> SerializeToXmlAsync(IEnumerable<Employee> employees)
+        private string SerializeToXml(IEnumerable<Employee> employees)
         {
             var employeesRoot = new EmployeesRoot
             {
@@ -63,7 +63,7 @@
 
             string serializedData = employeesRoot.SerializeToXml();
 
-            return Task.FromResult(serializedData);
+            return serializedData;
         }
     }
 }

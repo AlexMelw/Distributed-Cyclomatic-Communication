@@ -22,27 +22,29 @@
 
         private readonly int _discoveryResponsePort;
         private readonly ConcurrentBag<DiscoveryResponseMessage> _discoveryResponseMessages;
-        private readonly int _timeoutMillisec;
+        private IPAddress _clientLocalIpAddress;
 
-        public IPAddress ClientLocalIpAddress { get; set; }
+        //public IPAddress ClientLocalIpAddress { get; set; }
         public IPEndPoint MulticastIPEndPoint { get; set; }
-        public int ClientReceiveResponseTcpPort { get; set; }
+        //public int ClientReceiveResponseTcpPort { get; set; }
 
         #region CONSTRUCTORS
 
         public DiscoveryBasedCommunicationMediator()
         {
             //_discoveryResponsePort = RNGUtil.Next(30_000, 60_000);
-            _discoveryResponseMessages = new ConcurrentBag<DiscoveryResponseMessage>();
             _discoveryResponsePort = 36_456;
-            _timeoutMillisec = 1000 * 100; // 10sec
+            _discoveryResponseMessages = new ConcurrentBag<DiscoveryResponseMessage>();
         }
 
         #endregion
 
-        public string MakeRequest(RequestDataMessage requestMessage)
+        public string MakeRequest(RequestDataMessage requestMessage, int discoveryTimeout)
         {
-            IPEndPoint mavenEndPoint = GetMavenEndPoint();
+            // Why not in constructor? Because preferred IP address can be changed be SO before MakeRequest() is called.
+            _clientLocalIpAddress = Dns.GetHostAddresses(Dns.GetHostName()).FirstOrDefault();
+
+            IPEndPoint mavenEndPoint = GetMavenEndPoint(discoveryTimeout);
 
             string data = RetrieveDataFromMaven(requestMessage, mavenEndPoint);
 
@@ -101,7 +103,7 @@
             var dataAgent = new DataAgent();
 
             // Retrieve data from the maven node
-            string data = dataAgent.MakeRequest(requestMessage, mavenEndPoint);
+            string data = dataAgent.MakeRequest(requestMessage, mavenEndPoint, "SECRET");
 
             return data;
         }
@@ -110,7 +112,7 @@
 
         #region Maven Node Related
 
-        private IPEndPoint GetMavenEndPoint()
+        private IPEndPoint GetMavenEndPoint(int discoveryTimeout)
         {
             // TIMEOUT WARNING $C$ T OBE REVIEWED ====================================================================
 
@@ -121,10 +123,9 @@
             //Task<LinkedList<DiscoveryResponseMessage>> getResponseMessagesTask = ReceiveDiscoveryResponseMessagesAsync();
 
             _discoveryIsActive = true;
-            Thread thread = new Thread(ReceiveDiscoveryResponseMessages);
-            thread.Start();
-
+            new Thread(() => ReceiveDiscoveryResponseMessages(discoveryTimeout)).Start();
             Thread.Sleep(500);
+
             // Discovery Init
             InitializeDiscoveryProcedure(mCastSocket);
 
@@ -133,14 +134,18 @@
             //ReceiveDiscoveryResponseMessages();
 
             //thread.Join(_timeoutMillisec);
-            Thread.Sleep(TimeSpan.FromMilliseconds(_timeoutMillisec));
-            _discoveryIsActive = false;
+
+            Thread.Sleep(TimeSpan.FromSeconds(discoveryTimeout));
+            _discoveryIsActive = false; // Either info about all the nodes is collected or time is over.
+
             //thread.Abort();
 
             // Discovery Receive Response
             //LinkedList<DiscoveryResponseMessage> discoveryResponseMessages = await getResponseMessagesTask.ConfigureAwait(false);
 
             var discoveryResponseMessages = new List<DiscoveryResponseMessage>(_discoveryResponseMessages);
+
+            Console.Out.WriteLine($"Total nodes discovered: {discoveryResponseMessages.Count}");
 
             // Discovery Process Response Results
             IPEndPoint mavenEndPoint = IdentifyMavenNode(discoveryResponseMessages);
@@ -172,7 +177,7 @@
             return mavenEndPoint;
         }
 
-        private void ReceiveDiscoveryResponseMessages()
+        private void ReceiveDiscoveryResponseMessages(int discoveryTimeout)
         {
             #region Trash
 
@@ -191,9 +196,9 @@
             {
                 Console.Out.WriteLine("Run the Receive Discovery Response SERVICE");
                 IPAddress ipAddress = Dns.GetHostAddresses(Dns.GetHostName()).FirstOrDefault();
-                Console.Out.WriteLine($"Listening to {ipAddress}:{_discoveryResponsePort}");
+                Console.Out.WriteLine($"Listening to {IPAddress.Any}:{_discoveryResponsePort}");
 
-                var tcpListener = new TcpListenerEx(ipAddress, _discoveryResponsePort);
+                var tcpListener = new TcpListenerEx(IPAddress.Any, _discoveryResponsePort);
 
                 try
                 {
@@ -202,7 +207,7 @@
                     Console.WriteLine(" [TCP] The local End point is  :" + tcpListener.LocalEndpoint);
                     Console.WriteLine(" [TCP] Waiting for a connection.....\n");
 
-                    TimeSpan timeoutTimeSpan = TimeSpan.FromMilliseconds(_timeoutMillisec);
+                    TimeSpan timeoutTimeSpan = TimeSpan.FromSeconds(discoveryTimeout);
                     DateTime listeningStartTime = DateTime.Now;
 
                     #region Trash
@@ -285,7 +290,7 @@
                                 return;
                             }
 
-                            byte[] buffer = new byte[Common.BufferSize];
+                            byte[] buffer = new byte[Common.UnicastBufferSize];
 
                             #region Trash
 
@@ -349,6 +354,8 @@
                             byte[] data = buffer.Take(receivedBytes).ToArray();
 
                             string xmlData = data.ToUtf8String();
+
+                            Console.Out.WriteLine(xmlData);
 
                             DiscoveryResponseMessage responseMessage = xmlData
                                 .DeserializeTo<DiscoveryResponseMessage>();
@@ -508,14 +515,16 @@
         {
             var mCastSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
-            var localEP = new IPEndPoint(ClientLocalIpAddress, 0);
+            var localEP = new IPEndPoint(_clientLocalIpAddress, 0);
 
             // Bind this endpoint to the multicast socket.
             mCastSocket.Bind(localEP); // bind socket to 127.0.0.1:*
 
             // Define a MulticastOption object specifying the multicast group address and the local IP address.
             // The multicast group address is the same as the address used by the listener.
-            var mCastOption = new MulticastOption(MulticastIPEndPoint.Address, ClientLocalIpAddress);
+            var mCastOption = new MulticastOption(MulticastIPEndPoint.Address, _clientLocalIpAddress);
+
+            Console.Out.WriteLine($"Multicast socket is created for: {MulticastIPEndPoint.Address} & {_clientLocalIpAddress}");
 
             mCastSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, mCastOption);
 
