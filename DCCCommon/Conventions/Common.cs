@@ -55,8 +55,8 @@
 
         #region Data Format
 
-        public const string Xml = "XML";
-        public const string Json = "JSON";
+        public const string Xml = "Xml";
+        public const string Json = "Json";
 
         #endregion
     }

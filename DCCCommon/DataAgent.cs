@@ -52,7 +52,10 @@
 
             byte[] buffer = new byte[Common.UnicastBufferSize];
             int bytesRead = networkStream.Read(buffer, 0, Common.UnicastBufferSize);
-            int payloadSize = BitConverter.ToInt32(buffer.Take(bytesRead).ToArray(), 0);
+            //long payloadSize = BitConverter.ToInt64(buffer.Take(bytesRead).ToArray(), 0);
+            byte[] binaryHeader = buffer.Take(bytesRead).ToArray();
+            string header = binaryHeader.ToUtf8String();
+            long payloadSize = Convert.ToInt64(header);
             Console.Out.WriteLine($"[Node ID {nodeId}] The payload size is [ {payloadSize} ]");
 
 
@@ -71,7 +74,7 @@
             return data;
         }
 
-        private string RetrieveDataPayloadFromMaven(int payloadSize, NetworkStream networkStream,
+        private string RetrieveDataPayloadFromMaven(long payloadSize, NetworkStream networkStream,
             byte[] buffer)
         {
             var receivedDataChunks = new LinkedList<IEnumerable<byte>>();
@@ -82,7 +85,7 @@
 
                 receivedDataChunks.AddLast(buffer.Take(bytesRead));
 
-                payloadSize -= payloadSize;
+                payloadSize -= bytesRead;
             }
 
             byte[] receivedData = receivedDataChunks.SelectMany(chunk => chunk).ToArray();

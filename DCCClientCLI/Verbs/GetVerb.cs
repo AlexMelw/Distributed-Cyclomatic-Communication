@@ -17,7 +17,7 @@
         public string OrderingCondition { get; set; }
 
         [Option('t', "timeout", Required = false, Default = 10,
-            HelpText = "Sets timeout for nodes discovery process.")]
+            HelpText = "Sets timeout (sec.) for nodes discovery process.")]
         public int Timeout { get; set; }
 
         [Option('s', "schema", Required = false,

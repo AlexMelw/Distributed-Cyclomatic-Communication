@@ -21,15 +21,21 @@
 
         #endregion
 
-        public IEnumerable<Employee> GetData()
+        public IEnumerable<Employee> GetData(string dataSourceFilePath)
         {
-            IEnumerable<Employee> employees = LocalStorageManager.Default.GetEmployees();
+            IEnumerable<Employee> employees = LocalStorageManager.Default.GetEmployeesFrom(dataSourceFilePath);
+            
+            if (!string.IsNullOrWhiteSpace(_filterCondition))
+            {
+                employees = employees.Where(_filterCondition);
+            }
 
-            IEnumerable<Employee> selectedEmployees = employees
-                .Where(_filterCondition)
-                .OrderBy(_orderingCondition);
+            if (!string.IsNullOrWhiteSpace(_orderingCondition))
+            {
+                employees = employees.OrderBy(_orderingCondition);
+            }
 
-            return selectedEmployees;
+            return employees;
         }
     }
 }

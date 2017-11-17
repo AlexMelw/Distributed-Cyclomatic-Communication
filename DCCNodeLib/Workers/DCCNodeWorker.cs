@@ -183,10 +183,13 @@
             //var discoveryResponseMessages = new LinkedList<DiscoveryResponseMessage>();
 
             var tcpListener = new TcpListenerEx(IPAddress.Any, TcpServingPort);
+            Console.Out.WriteLine($"[Node ID {CurrentNodeId}] TcpListener is active? [ {tcpListener.Active} ]");
 
             try
             {
                 tcpListener.Start();
+                Console.Out.WriteLine($"[Node ID {CurrentNodeId}] TcpListener is active? [ {tcpListener.Active} ]");
+                Console.Out.WriteLine($"[Node ID {CurrentNodeId}] has started listening at {IPAddress.Any}:{TcpServingPort}");
 
                 Console.WriteLine(" [TCP] The local End point is  :" + tcpListener.LocalEndpoint);
                 Console.WriteLine(" [TCP] Waiting for a connection.....\n");
@@ -230,28 +233,14 @@
 
                     //responseHandlers.AddLast(responseHandlerTask);
 
-                    new Thread(() => HandleRequest(tcpListener, workerSoket)).Start();
+                    new Thread(() => HandleRequest(workerSoket)).Start();
                 }
-
-
-                //foreach (Task<DiscoveryResponseMessage> handlerTask in responseHandlers)
-                //{
-                //    if (!handlerTask.IsCompleted)
-                //    {
-                //        // We do not care about the tasks that didn't get the job done
-                //        continue;
-                //    }
-
-                //    DiscoveryResponseMessage discoveryResponseMessage = await handlerTask.ConfigureAwait(false);
-
-                //    discoveryResponseMessages.AddLast(discoveryResponseMessage);
-                //}
             }
             catch (Exception e)
             {
-                Console.Out.WriteLine("[TCP] Grave error occured. Searver is dead.");
+                Console.Out.WriteLine("[TCP] Grave error occurred. Server is dead.");
                 Console.Out.WriteLine($"e = {e.Message}");
-                Debug.WriteLine("[TCP] Grave error occured. Searver is dead.");
+                Debug.WriteLine("[TCP] Grave error occurred. Server is dead.");
                 Debug.WriteLine($"e = {e.Message}");
                 Console.Out.WriteLine("[TCP] PRESS ANY KEY TO QUIT");
                 Console.ReadLine();
@@ -267,11 +256,11 @@
             }
         }
 
-        private void HandleRequest(TcpListenerEx tcpListener, Socket workerSocket)
+        private void HandleRequest(Socket workerSocket)
         {
             Console.Out.WriteLine($" [TCP]   >> SERVER WORKER IS TALKING TO {workerSocket.RemoteEndPoint}");
 
-            LinkedList<IEnumerable<byte>> receivedBinaryData = new LinkedList<IEnumerable<byte>>();
+            //LinkedList<IEnumerable<byte>> receivedBinaryData = new LinkedList<IEnumerable<byte>>();
 
             //NetworkStream networkStream = workerSoket.GetStream();
 
@@ -282,6 +271,9 @@
             byte[] binaryMessage = buffer.Take(receivedBytes).ToArray();
 
             string xmlMessage = binaryMessage.ToUtf8String();
+
+            Console.Out.WriteLine("Received Data Request Message");
+            Console.Out.WriteLine(xmlMessage);
 
             var requestDataMessage = xmlMessage.DeserializeTo<RequestDataMessage>();
 
@@ -307,17 +299,19 @@
 
             var dslInterpreter = new DSLInterpreter(requestDataMessage);
 
-            IEnumerable<Employee> currentNodeEmployees = dslInterpreter.GetData();
+            IEnumerable<Employee> currentNodeEmployees = dslInterpreter.GetData(DataSourcePath);
 
             var employees = new List<Employee>(currentNodeEmployees);
 
             var dataAgentRequestTasks = new LinkedList<Task<string>>();
 
-            if (requestDataMessage.Propagation > 0)
+            if (AdjacentNodesEndPointsWithIDs.Any()  &&  requestDataMessage.Propagation > 0)
             {
                 // Message Retransmission
-                requestDataMessage.Propagation = 0;
-                requestDataMessage.DataFormat = Common.Xml;
+                RequestDataMessage replicatedMessage = requestDataMessage.Replicate();
+
+                replicatedMessage.Propagation = 0;
+                replicatedMessage.DataFormat = Common.Xml;
 
                 var dataAgent = new DataAgent();
 
@@ -326,7 +320,7 @@
                     Task<string> requestDataTask = Task.Run(() =>
                     {
                         string xmlData = dataAgent.MakeRequest(
-                            requestDataMessage,
+                            replicatedMessage,
                             idEpPair.Item2, 
                             idEpPair.Item1.ToString());
 
@@ -363,6 +357,14 @@
             // To be returned
 
             byte[] dataToBeSent = serializedData.ToUtf8EncodedByteArray();
+
+            // Send header (meta-data) first
+
+            string header = dataToBeSent.Length.ToString();
+            byte[] binaryHeader = header.ToUtf8EncodedByteArray();
+            workerSocket.Send(binaryHeader);
+
+            // Then send payload data
 
             IEnumerable<IEnumerable<byte>> chunks = dataToBeSent.ChunkBy(Common.UnicastBufferSize);
 

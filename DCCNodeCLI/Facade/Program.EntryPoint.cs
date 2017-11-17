@@ -1,6 +1,5 @@
 ﻿namespace DCCNodeCLI.Facade
 {
-    using System;
     using CommandLine;
     using Infrastructure;
     using Options;

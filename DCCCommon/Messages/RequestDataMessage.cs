@@ -1,5 +1,7 @@
 ﻿namespace DCCCommon.Messages
 {
+    using NClone;
+
     public class RequestDataMessage
     {
         public int Propagation { get; set; }
@@ -14,6 +16,11 @@
                    $"{nameof(DataType)}: {DataType}, " +
                    $"{nameof(FilterCondition)}: {FilterCondition}, " +
                    $"{nameof(OrderingCondition)}: {OrderingCondition}";
+        }
+
+        public RequestDataMessage Replicate()
+        {
+            return Clone.ObjectGraph(this);
         }
     }
 }
