@@ -321,7 +321,7 @@
 
                 foreach (var idEpPair in AdjacentNodesEndPointsWithIDs)
                 {
-                    Task<string> requestDataTask = Task.Run(() =>
+                    Task<string> requestDataTask = Task.Run<string>(() =>
                     {
                         string xmlData = dataAgent.MakeRequest(
                             replicatedMessage,
@@ -352,7 +352,7 @@
             //    employees.AddRange(employeesContainer.EmployeeArray);
             //}
 
-            Task.WaitAll(dataAgentRequestTasks.ToArray());
+            Task.WaitAll(dataAgentRequestTasks.Cast<Task>().ToArray()); // WARNING: $C$ IMPORTANT CHANGES
 
             foreach (Task<string> task in dataAgentRequestTasks)
             {
@@ -368,9 +368,12 @@
 
             employees.AddRange(dataFromCurrentNode);
 
-            employees = employees.Distinct(EmployeeIdComparer.Default).ToList();
+            if (requestDataMessage.Propagation > 0)
+            {
+                employees = employees.Distinct(EmployeeIdComparer.Default).ToList();
 
-            employees = dslInterpreter.ProcessData(employees).ToList();
+                employees = dslInterpreter.ProcessData(employees).ToList();
+            }
 
             var dslConverter = new DSLConverter(requestDataMessage);
 
@@ -383,7 +386,7 @@
             // Send header (meta-data) first
 
             string header = dataToBeSent.Length.ToString();
-            Console.Out.WriteLine($"[Node ID {CurrentNodeId}] Payload to be sent [ {header} ]");
+            Console.Out.WriteLine($"[Node ID {CurrentNodeId}] Payload to be sent: [ {header} ] bytes.");
 
             byte[] binaryHeader = header.ToUtf8EncodedByteArray();
             workerSocket.Send(binaryHeader);
@@ -392,7 +395,7 @@
             receivedBytes = workerSocket.Receive(buffer);
             byte[] binaryAck = buffer.Take(receivedBytes).ToArray();
             string ack = binaryAck.ToUtf8String();
-            Console.Out.WriteLine($"[Node ID {CurrentNodeId}] Payload acknowledgment [ {ack} ]");
+            Console.Out.WriteLine($"[Node ID {CurrentNodeId}] Payload acknowledgment: [ {ack} ] bytes.");
 
 
             // Then send payload data
@@ -409,7 +412,5 @@
 
             workerSocket.Close();
         }
-
-        //public void Dispose() { }
     }
 }

@@ -47,7 +47,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Employees.xsd</DependentUpon>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Compile>
     <Compile Include="Workers\DCCClientWorker.cs" />
     <Compile Include="Workers\DCCJsonClientWorker.cs" />
@@ -81,21 +80,16 @@
   <ItemGroup>
     <None Include="Schemas\Employees.xsc">
       <DependentUpon>Employees.xsd</DependentUpon>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Schemas\Employees.xsd">
       <Generator>MSDataSetGenerator</Generator>
       <LastGenOutput>Employees.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Schemas\Employees.xss">
       <DependentUpon>Employees.xsd</DependentUpon>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Schemas\EmployeesSchema.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Include="Schemas\EmployeesSchema.json" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

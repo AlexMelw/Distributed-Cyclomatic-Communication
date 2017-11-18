@@ -1,5 +1,7 @@
 ﻿namespace DCCClientLib.Workers
 {
+    using System;
+    using System.IO;
     using System.Threading.Tasks;
     using Interfaces;
     using Newtonsoft.Json.Linq;
@@ -9,7 +11,20 @@
     {
         public override bool ValidateResponseAgainstSchema(string schemaPath)
         {
-            JSchema schema = JSchema.Parse(schemaPath);
+            string jsonSchema = default;
+
+            try
+            {
+                jsonSchema = File.ReadAllText(schemaPath);
+            }
+            catch (IOException)
+            {
+                Console.Out.WriteLine($"Error while reading file {schemaPath}.");
+                Console.Out.WriteLine("Application terminated.");
+                Environment.Exit(1);
+            }
+
+            JSchema schema = JSchema.Parse(jsonSchema);
 
             JObject json = JObject.Parse(ReceivedData);
 

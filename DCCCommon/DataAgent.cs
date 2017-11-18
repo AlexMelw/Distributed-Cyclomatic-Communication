@@ -60,7 +60,7 @@
             byte[] binaryHeader = buffer.Take(bytesRead).ToArray();
             string header = binaryHeader.ToUtf8String();
             long payloadSize = Convert.ToInt64(header);
-            Console.Out.WriteLine($"[Node ID {nodeId}] The payload size is [ {payloadSize} ]");
+            Console.Out.WriteLine($"[Node ID {nodeId}] The payload size is [ {payloadSize} ] bytes.");
 
             byte[] ackBuffer = payloadSize.ToString().ToUtf8EncodedByteArray();
             socket.Send(ackBuffer);

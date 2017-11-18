@@ -25,22 +25,29 @@
                 if (!string.IsNullOrWhiteSpace(options.SchemaPath))
                 {
                     valid = clientWorker.ValidateResponseAgainstSchema(options.SchemaPath);
+
+                    string dataType = options.DataFormat.ToString();
+
+                    if (!valid)
+                    {
+                        Console.Out.WriteLine($"Received {dataType} is NOT valid!");
+                        return;
+
+                    }
+                    else
+                    {
+                        Console.Out.WriteLine($"Received {dataType} is VALID!");
+                    }
+
                 }
 
-                if (valid)
-                {
-                    string response = clientWorker.GetResponse();
-                    Console.Out.WriteLine(response);
-                }
-                else
-                {
-                    string dataType = options.DataFormat.ToString();
-                    Console.Out.WriteLine($"Received {dataType} is NOT valid!");
-                }
+                string response = clientWorker.GetResponse();
+                Console.Out.WriteLine(response);
             }
-            finally
+            catch (Exception)
             {
-                //clientWorker.Dispose();
+                Console.Out.WriteLine("An error occurred while retrieving data...");
+                Console.Out.WriteLine("Application terminated.");
             }
         }
     }

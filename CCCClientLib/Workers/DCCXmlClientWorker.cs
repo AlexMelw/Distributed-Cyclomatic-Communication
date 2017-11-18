@@ -14,7 +14,6 @@
         {
             XDocument xDoc = XDocument.Parse(ReceivedData);
 
-
             XmlTextReader reader = new XmlTextReader(schemaPath);
             XmlSchema schema = XmlSchema.Read(reader, (sender, args) => { });
 

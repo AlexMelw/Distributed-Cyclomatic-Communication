@@ -22,6 +22,8 @@
 
             //args = new[] { "get-json", "-d", "Employee", "-f", "Id > 10 and Id <= 20", "-o", "Id descending", "-t", "10" };
             //args = new[] { "get-json", "-d", "Employee", "-t", "1" };
+            args = new[] { "get-json", "-d", "Employee", "-f", "Salary > 3000 and Gender == \"Male\"", "-o", "Id", "-t", "1", "-s", "Schemas\\EmployeesSchema.json" };
+            //args = new[] { "get-xml", "-d", "Employee", "-f", "Salary > 3000 and Gender == \"Male\"", "-o", "Id", "-t", "1", "-s", "Schemas\\Employees.xsd" };
 
             Parser.Default.ParseArguments<GetXmlVerb, GetJsonVerb>(args)
                 .WithParsed<GetXmlVerb>(ProcessGetXmlCommand)
