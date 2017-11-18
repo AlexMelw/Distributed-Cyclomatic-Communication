@@ -43,11 +43,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Mediators\Example.cs" />
-    <Compile Include="Schemas\Employees.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Employees.xsd</DependentUpon>
-    </Compile>
     <Compile Include="Workers\DCCClientWorker.cs" />
     <Compile Include="Workers\DCCJsonClientWorker.cs" />
     <Compile Include="Workers\DCCXmlClientWorker.cs" />
@@ -76,20 +71,6 @@
     <PackageReference Include="Ninject">
       <Version>3.3.3</Version>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Schemas\Employees.xsc">
-      <DependentUpon>Employees.xsd</DependentUpon>
-    </None>
-    <None Include="Schemas\Employees.xsd">
-      <Generator>MSDataSetGenerator</Generator>
-      <LastGenOutput>Employees.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Schemas\Employees.xss">
-      <DependentUpon>Employees.xsd</DependentUpon>
-    </None>
-    <None Include="Schemas\EmployeesSchema.json" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

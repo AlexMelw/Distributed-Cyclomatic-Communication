@@ -10,7 +10,7 @@
 
 #pragma warning disable 1591
 
-namespace DCCClientLib.Schemas {
+namespace DCCNodeCLI.Data.Actual_Schemas {
     
     
     /// <summary>

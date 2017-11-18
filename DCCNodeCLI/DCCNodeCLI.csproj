@@ -42,6 +42,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\Actual Schemas\Employees.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Employees.xsd</DependentUpon>
+    </Compile>
     <Compile Include="Facade\Program.CommandProcessor.cs" />
     <Compile Include="Options\NodeOptions.cs" />
     <Compile Include="Facade\Program.EntryPoint.cs" />
@@ -49,6 +54,20 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Data\Actual Schemas\Employees.xsc">
+      <DependentUpon>Employees.xsd</DependentUpon>
+    </None>
+    <None Include="Data\Actual Schemas\Employees.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>Employees.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Data\Actual Schemas\Employees.xss">
+      <DependentUpon>Employees.xsd</DependentUpon>
+    </None>
+    <None Include="Data\Actual Schemas\EmployeesSchema.json" />
+    <None Include="Data\EntireDataSource\Employees.json" />
+    <None Include="DIS Runner\run.bat" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\EasySharp\NHelpers\NHelpers.csproj">
@@ -72,6 +91,15 @@
     <PackageReference Include="CommandLineParser">
       <Version>2.1.1-beta</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Data\Chunked DataSource\Employees1.xml" />
+    <Content Include="Data\Chunked DataSource\Employees2.xml" />
+    <Content Include="Data\Chunked DataSource\Employees3.xml" />
+    <Content Include="Data\Chunked DataSource\Employees4.xml" />
+    <Content Include="Data\Chunked DataSource\Employees5.xml" />
+    <Content Include="Data\Chunked DataSource\Employees6.xml" />
+    <Content Include="Data\EntireDataSource\Employees.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

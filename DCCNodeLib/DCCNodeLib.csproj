@@ -69,11 +69,5 @@
       <Version>1.0.7</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="Data\Employees.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Data\Employees.json" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
