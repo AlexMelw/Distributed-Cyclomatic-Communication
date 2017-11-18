@@ -49,7 +49,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CCCClientLib\DCCClientLib.csproj">
+    <ProjectReference Include="..\DCCClientLib\DCCClientLib.csproj">
       <Project>{996fadd0-c5eb-4b3f-91df-9d2d7a6bb937}</Project>
       <Name>DCCClientLib</Name>
     </ProjectReference>
