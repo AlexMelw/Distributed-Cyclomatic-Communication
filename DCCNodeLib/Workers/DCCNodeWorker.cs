@@ -194,7 +194,8 @@
             {
                 tcpListener.Start();
                 Console.Out.WriteLine($"[Node ID {CurrentNodeId}] TcpListener is active? [ {tcpListener.Active} ]");
-                Console.Out.WriteLine($"[Node ID {CurrentNodeId}] has started listening at {IPAddress.Any}:{TcpServingPort}");
+                Console.Out.WriteLine(
+                    $"[Node ID {CurrentNodeId}] has started listening at {IPAddress.Any}:{TcpServingPort}");
 
                 Console.WriteLine(" [TCP] The local End point is  :" + tcpListener.LocalEndpoint);
                 Console.WriteLine(" [TCP] Waiting for a connection.....\n");
@@ -304,13 +305,11 @@
 
             var dslInterpreter = new DSLInterpreter(requestDataMessage);
 
-            IEnumerable<Employee> currentNodeEmployees = dslInterpreter.GetData(DataSourcePath);
-
-            var employees = new List<Employee>(currentNodeEmployees);
+            var employees = Enumerable.Empty<Employee>().ToList();
 
             var dataAgentRequestTasks = new LinkedList<Task<string>>();
 
-            if (AdjacentNodesEndPointsWithIDs.Any()  &&  requestDataMessage.Propagation > 0)
+            if (AdjacentNodesEndPointsWithIDs.Any() && requestDataMessage.Propagation > 0)
             {
                 // Message Retransmission
                 RequestDataMessage replicatedMessage = requestDataMessage.Replicate();
@@ -326,7 +325,7 @@
                     {
                         string xmlData = dataAgent.MakeRequest(
                             replicatedMessage,
-                            idEpPair.Item2, 
+                            idEpPair.Item2,
                             idEpPair.Item1.ToString());
 
                         return xmlData;
@@ -334,7 +333,6 @@
 
                     dataAgentRequestTasks.AddLast(requestDataTask);
                 }
-
             }
 
             //while (dataAgentRequestTasks.Count > 0)
@@ -365,8 +363,14 @@
                 employees.AddRange(root.EmployeeArray);
             }
 
+            IEnumerable<Employee> dataFromCurrentNode = dslInterpreter
+                .GetDataFromDataSource(DataSourcePath);
+
+            employees.AddRange(dataFromCurrentNode);
+
             employees = employees.Distinct(EmployeeIdComparer.Default).ToList();
 
+            employees = dslInterpreter.ProcessData(employees).ToList();
 
             var dslConverter = new DSLConverter(requestDataMessage);
 
@@ -405,6 +409,7 @@
 
             workerSocket.Close();
         }
+
         //public void Dispose() { }
     }
 }

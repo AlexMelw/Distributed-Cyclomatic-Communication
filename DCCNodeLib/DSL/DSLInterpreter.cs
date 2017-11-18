@@ -1,6 +1,8 @@
 ﻿namespace DCCNodeLib.DSL
 {
+    using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Linq.Dynamic;
     using System.Threading.Tasks;
     using DCCCommon.Entities;
@@ -21,21 +23,30 @@
 
         #endregion
 
-        public IEnumerable<Employee> GetData(string dataSourceFilePath)
+        public IEnumerable<Employee> GetDataFromDataSource(string dataSourceFilePath)
         {
-            IEnumerable<Employee> employees = LocalStorageManager.Default.GetEmployeesFrom(dataSourceFilePath);
-            
+            IEnumerable<Employee> data = LocalStorageManager.Default
+                                             .GetEmployeesFrom(dataSourceFilePath)
+                                         ?? Enumerable.Empty<Employee>();
+
+            return data;
+        }
+
+        public IEnumerable<Employee> ProcessData(IEnumerable<Employee> employees)
+        {
+            IEnumerable<Employee> processedEmployees = employees;
+
             if (!string.IsNullOrWhiteSpace(_filterCondition))
             {
-                employees = employees.Where(_filterCondition);
+                processedEmployees = employees?.Where(_filterCondition);
             }
 
             if (!string.IsNullOrWhiteSpace(_orderingCondition))
             {
-                employees = employees.OrderBy(_orderingCondition);
+                processedEmployees = processedEmployees?.OrderBy(_orderingCondition);
             }
 
-            return employees;
+            return processedEmployees;
         }
     }
 }

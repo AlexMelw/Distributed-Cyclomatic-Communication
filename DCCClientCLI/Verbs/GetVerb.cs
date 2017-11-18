@@ -16,7 +16,7 @@
             HelpText = "Indicate key/keys to apply ordering by.")]
         public string OrderingCondition { get; set; }
 
-        [Option('t', "timeout", Required = false, Default = 10,
+        [Option('t', "timeout", Required = false, Default = 1,
             HelpText = "Sets timeout (sec.) for nodes discovery process.")]
         public int Timeout { get; set; }
 

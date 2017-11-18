@@ -256,7 +256,7 @@
                         #endregion
 
                         Console.WriteLine($" [TCP] Connection accepted from: {{ {workerSoket.RemoteEndPoint} }}");
-                        Console.WriteLine($" [TCP] SoketWorker is bound to: {{ {workerSoket.LocalEndPoint} }}");
+                        Console.WriteLine($" [TCP] SocketWorker is bound to: {{ {workerSoket.LocalEndPoint} }}");
 
                         #region Trash
 
