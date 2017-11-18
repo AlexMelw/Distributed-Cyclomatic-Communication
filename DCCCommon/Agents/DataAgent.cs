@@ -1,11 +1,10 @@
-﻿namespace DCCCommon
+﻿namespace DCCCommon.Agents
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Net;
     using System.Net.Sockets;
-    using System.Threading.Tasks;
     using Conventions;
     using EasySharp.NHelpers.CustomExMethods;
     using Messages;
@@ -55,7 +54,7 @@
             byte[] buffer = new byte[Common.UnicastBufferSize];
             //int bytesRead = networkStream.Read(buffer, 0, Common.UnicastBufferSize);
             int bytesRead = socket.Receive(buffer);
-            
+
             //long payloadSize = BitConverter.ToInt64(buffer.Take(bytesRead).ToArray(), 0);
             byte[] binaryHeader = buffer.Take(bytesRead).ToArray();
             string header = binaryHeader.ToUtf8String();
@@ -104,7 +103,6 @@
             string data = receivedData.ToUtf8String();
 
             return data;
-
         }
 
         //private string RetrieveDataPayloadFromMaven(long payloadSize, NetworkStream networkStream,

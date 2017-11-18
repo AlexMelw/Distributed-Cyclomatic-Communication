@@ -9,9 +9,9 @@
     using System.Net.Sockets;
     using System.Threading;
     using DCCCommon;
+    using DCCCommon.Agents;
     using DCCCommon.Conventions;
     using DCCCommon.Messages;
-    using DCCDiscoveryService.Messages;
     using EasySharp.NHelpers.CustomExMethods;
     using EasySharp.NHelpers.CustomWrappers.Networking;
     using EasySharp.NHelpers.Utils.Cryptography;
@@ -47,16 +47,6 @@
 
             IPEndPoint mavenEndPoint = GetMavenEndPoint(discoveryTimeout);
 
-            string data = RetrieveDataFromMaven(requestMessage, mavenEndPoint);
-
-            return data;
-        }
-
-        #region Download Payload Data
-
-        private string RetrieveDataFromMaven(
-            RequestDataMessage requestMessage, IPEndPoint mavenEndPoint)
-        {
             #region Trash
 
             //// Establish connection to the maven node
@@ -108,6 +98,8 @@
 
             return data;
         }
+
+        #region Download Payload Data
 
         #endregion
 

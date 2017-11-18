@@ -1,4 +1,4 @@
-﻿namespace DCCDiscoveryService.Messages
+﻿namespace DCCCommon.Messages
 {
     public class MulticastDiscoveryRequestMessage
     {

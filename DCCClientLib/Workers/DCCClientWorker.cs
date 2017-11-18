@@ -1,10 +1,12 @@
 ﻿namespace DCCClientLib.Workers
 {
     using System;
+    using System.Collections.Generic;
     using System.Net;
     using System.Threading.Tasks;
     using DCCCommon;
     using DCCCommon.Messages;
+    using DCCCommon.Models;
     using Interfaces;
     using Mediators;
     using static DCCCommon.Conventions.Common;
@@ -122,12 +124,13 @@
                 Environment.Exit(1);
             }
 
+            IEnumerable<NodeInfo> nodesIDsWithAdjacentNodesNo = StartupConfigManager.Default.GetNodesIDsWithAdjacentNodesNo();
 
             CommunicationMediator = new ProxyBasedCommunicationMediator
             {
-                //ClientLocalIpAddress = localIpAddress,
                 ClientReceiveResponseTcpPort = responseTcpPort,
-                ProxyEndPoint = proxyEndPoint
+                ProxyEndPoint = proxyEndPoint,
+                NodeIdRangList = nodesIDsWithAdjacentNodesNo
             };
         }
 

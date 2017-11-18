@@ -8,6 +8,7 @@
     using System.Xml.Linq;
     using Conventions;
     using EasySharp.NHelpers.CustomExMethods;
+    using Models;
     using static Conventions.Common;
 
     public class StartupConfigManager
@@ -39,6 +40,41 @@
         }
 
         #region Client Related
+
+        public IEnumerable<NodeInfo> GetNodesIDsWithAdjacentNodesNo()
+        {
+            //var nodesIdRangPairList = new LinkedList<(int, int)>();
+            var nodesIdRangPairList = new LinkedList<NodeInfo>();
+
+            try
+            {
+                lock (PadLock)
+                {
+                    XElement root = XElement.Load(ConfigFilePath);
+
+                    IEnumerable<XElement> nodes = root?.Elements(Node);
+
+                    foreach (XElement node in nodes)
+                    {
+                        int id = node.Attribute(Id).GetAs<int>();
+
+                        int remoteNodesNo = node.Descendants(RemoteNode).Count();
+
+                        nodesIdRangPairList.AddLast(new NodeInfo
+                        {
+                            Id = id,
+                            AdjacentNodesNo = remoteNodesNo
+                        });
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            return nodesIdRangPairList;
+        }
 
         public IEnumerable<IPEndPoint> GetProxyConnectedNodesEndPoints()
         {
@@ -335,7 +371,7 @@
                                                   ?? string.Empty;
 
                         string adjacentNodeId = adjacentNode?.Attribute(Id)?.Value
-                                ?? string.Empty;
+                                                ?? string.Empty;
 
                         try
                         {
@@ -428,6 +464,27 @@
             }
 
             return node;
+        }
+
+        public IPEndPoint GetNodeIPEndPointById(int nodeId)
+        {
+            XElement node = GetNodeById(nodeId);
+
+            string nodeIpAddressString = string.Empty;
+
+            lock (PadLock)
+            {
+                nodeIpAddressString = node?.Element(LocalIpAddress)?.Value
+                                      ?? string.Empty;
+            }
+
+            int servingPort = GetNodeTcpServingPort(nodeId);
+
+            var nodeEndPoint = new IPEndPoint(
+                IPAddress.Parse(nodeIpAddressString),
+                servingPort);
+
+            return nodeEndPoint;
         }
 
         #endregion

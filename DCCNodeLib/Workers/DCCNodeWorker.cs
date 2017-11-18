@@ -2,22 +2,21 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
     using System.Net;
     using System.Net.Sockets;
     using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
+    using Agents;
     using DCCCommon;
+    using DCCCommon.Agents;
     using DCCCommon.Comparers;
     using DCCCommon.Conventions;
     using DCCCommon.Entities;
     using DCCCommon.Messages;
-    using DCCDiscoveryService.Messages;
     using DSL;
     using EasySharp.NHelpers.CustomExMethods;
-    using EasySharp.NHelpers.CustomWrappers.Networking;
     using Interfaces;
 
     public class DCCNodeWorker : IDCCNodeWorker
@@ -185,103 +184,18 @@
 
         private void StartListeningToTcpServingPort()
         {
-            //var discoveryResponseMessages = new LinkedList<DiscoveryResponseMessage>();
-
-            var tcpListener = new TcpListenerEx(IPAddress.Any, TcpServingPort);
-            Console.Out.WriteLine($"[Node ID {CurrentNodeId}] TcpListener is active? [ {tcpListener.Active} ]");
-
-            try
-            {
-                tcpListener.Start();
-                Console.Out.WriteLine($"[Node ID {CurrentNodeId}] TcpListener is active? [ {tcpListener.Active} ]");
-                Console.Out.WriteLine(
-                    $"[Node ID {CurrentNodeId}] has started listening at {IPAddress.Any}:{TcpServingPort}");
-
-                Console.WriteLine(" [TCP] The local End point is  :" + tcpListener.LocalEndpoint);
-                Console.WriteLine(" [TCP] Waiting for a connection.....\n");
-
-                //var timeout = TimeSpan.FromSeconds(30);
-                //DateTime listeningStartTime = DateTime.Now;
-
-                //var responseHandlers = new LinkedList<Task<DiscoveryResponseMessage>>();
-
-                while (true) // is serving continuously
-                {
-                    //if (DateTime.Now.Subtract(listeningStartTime) >= timeout)
-                    //{
-                    //    // No more accept responses from DIS nodes
-                    //    break;
-                    //}
-
-                    Socket workerSoket = tcpListener.AcceptSocket();
-
-                    Console.WriteLine($" [TCP] Connection accepted from: {{ {workerSoket.RemoteEndPoint} }}");
-                    Console.WriteLine($" [TCP] SoketWorker is bound to: {{ {workerSoket.LocalEndPoint} }}");
-
-                    #region Trash
-
-                    //TcpServerWorker.Instance
-                    //    .Init(workerTcpSocket, tcpListener)
-                    //    .StartWorking();
-
-                    //// TODO Unchecked modification
-                    //if (tcpListener.Inactive)
-                    //{
-                    //    tcpListener.Stop();
-                    //}
-
-                    #endregion
-
-                    //Task<DiscoveryResponseMessage> responseHandlerTask = Task.Run(() =>
-                    //{
-                    //    return HandleRequestAsync(tcpListener, workerSoket);
-                    //});
-
-                    //responseHandlers.AddLast(responseHandlerTask);
-
-                    new Thread(() => HandleRequest(workerSoket)).Start();
-                }
-            }
-            catch (Exception e)
-            {
-                Console.Out.WriteLine("[TCP] Grave error occurred. Server is dead.");
-                Console.Out.WriteLine($"e = {e.Message}");
-                Debug.WriteLine("[TCP] Grave error occurred. Server is dead.");
-                Debug.WriteLine($"e = {e.Message}");
-                Console.Out.WriteLine("[TCP] PRESS ANY KEY TO QUIT");
-                Console.ReadLine();
-
-                //throw; // TODO Unchecked modification
-            }
-            finally
-            {
-                if (tcpListener.Active)
-                {
-                    tcpListener.Stop();
-                }
-            }
+            var portListener = new TcpPortListener();
+            portListener.StartListening(TcpServingPort, HandleRequest);
         }
 
         private void HandleRequest(Socket workerSocket)
         {
-            Console.Out.WriteLine($" [TCP]   >> SERVER WORKER IS TALKING TO {workerSocket.RemoteEndPoint}");
+            #region Get Request Data Message
 
-            //LinkedList<IEnumerable<byte>> receivedBinaryData = new LinkedList<IEnumerable<byte>>();
+            var interceptor = new RequestInterceptor();
+            RequestDataMessage requestDataMessage = interceptor.GetRequest(workerSocket);
 
-            //NetworkStream networkStream = workerSoket.GetStream();
-
-            byte[] buffer = new byte[Common.UnicastBufferSize];
-
-            int receivedBytes = workerSocket.Receive(buffer);
-
-            byte[] binaryMessage = buffer.Take(receivedBytes).ToArray();
-
-            string xmlMessage = binaryMessage.ToUtf8String();
-
-            Console.Out.WriteLine("Received Data Request Message");
-            Console.Out.WriteLine(xmlMessage);
-
-            var requestDataMessage = xmlMessage.DeserializeTo<RequestDataMessage>();
+            #endregion
 
             #region Trash
 
@@ -302,6 +216,8 @@
             //}
 
             #endregion
+
+            #region Business Logic
 
             var dslInterpreter = new DSLInterpreter(requestDataMessage);
 
@@ -335,6 +251,8 @@
                 }
             }
 
+            #region Trash
+
             //while (dataAgentRequestTasks.Count > 0)
             //{
             //    // Identify the first task that completes.
@@ -351,6 +269,8 @@
 
             //    employees.AddRange(employeesContainer.EmployeeArray);
             //}
+
+            #endregion
 
             Task.WaitAll(dataAgentRequestTasks.Cast<Task>().ToArray()); // WARNING: $C$ IMPORTANT CHANGES
 
@@ -379,36 +299,14 @@
 
             string serializedData = dslConverter.TransformDataToRequiredFormat(employees);
 
-            // To be returned
+            #endregion
 
-            byte[] dataToBeSent = serializedData.ToUtf8EncodedByteArray();
+            #region Send Back Response Data
 
-            // Send header (meta-data) first
+            var respondent = new DataRespondent();
+            respondent.SendResponse(workerSocket, serializedData);
 
-            string header = dataToBeSent.Length.ToString();
-            Console.Out.WriteLine($"[Node ID {CurrentNodeId}] Payload to be sent: [ {header} ] bytes.");
-
-            byte[] binaryHeader = header.ToUtf8EncodedByteArray();
-            workerSocket.Send(binaryHeader);
-
-            buffer = new byte[Common.UnicastBufferSize];
-            receivedBytes = workerSocket.Receive(buffer);
-            byte[] binaryAck = buffer.Take(receivedBytes).ToArray();
-            string ack = binaryAck.ToUtf8String();
-            Console.Out.WriteLine($"[Node ID {CurrentNodeId}] Payload acknowledgment: [ {ack} ] bytes.");
-
-
-            // Then send payload data
-
-            Console.Out.WriteLine($"[Node ID {CurrentNodeId}] Sending data...");
-
-            IEnumerable<IEnumerable<byte>> chunks = dataToBeSent.ChunkBy(Common.UnicastBufferSize);
-
-            foreach (IEnumerable<byte> chunk in chunks)
-            {
-                byte[] chunkBuffer = chunk.ToArray();
-                workerSocket.Send(chunkBuffer, SocketFlags.Partial);
-            }
+            #endregion
 
             workerSocket.Close();
         }

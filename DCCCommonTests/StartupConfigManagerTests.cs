@@ -1,4 +1,4 @@
-﻿namespace DCCCommon.Tests
+﻿namespace DCCCommonTests
 {
     using System;
     using System.Collections.Generic;
@@ -8,8 +8,8 @@
     using System.Net;
     using DCCCommon;
     using DCCCommon.Conventions;
+    using DCCCommon.Entities;
     using DCCNodeLib;
-    using Entities;
     using NUnit.Framework;
 
     [TestFixture]

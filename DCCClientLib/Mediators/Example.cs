@@ -1,13 +1,10 @@
-﻿using System;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
-using System.IO;
-using System.Threading;
-
-
-namespace Mssc.TransportProtocols.Utilities
+﻿namespace DCCClientLib.Mediators
 {
+    using System;
+    using System.Net;
+    using System.Net.Sockets;
+    using System.Text;
+    using System.Threading;
 
 
     // The following Receive class is used by both the ClientOriginator and 

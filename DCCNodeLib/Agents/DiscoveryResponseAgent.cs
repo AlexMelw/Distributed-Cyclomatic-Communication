@@ -1,10 +1,9 @@
-﻿namespace DCCNodeLib.Workers
+﻿namespace DCCNodeLib.Agents
 {
     using System;
     using System.Net;
     using System.Net.Sockets;
-    using System.Threading.Tasks;
-    using DCCDiscoveryService.Messages;
+    using DCCCommon.Messages;
     using EasySharp.NHelpers.CustomExMethods;
 
     public class DiscoveryResponseAgent
