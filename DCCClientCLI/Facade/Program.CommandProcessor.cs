@@ -12,10 +12,8 @@
     {
         private static void ProcessGetXmlCommand(GetXmlVerb options)
         {
-            //Task.Run((Action) (async () =>
-            //{
-
-            //})).Wait();
+            Console.Out.WriteLine("options.FilterCondition = {0}", options.FilterCondition);
+            Console.Out.WriteLine("options.OrderingCondition = {0}", options.OrderingCondition);
 
 
             IDCCClientWorker clientWorker = IoC.Resolve<IDCCXmlClientWorker>();
@@ -25,9 +23,8 @@
 
         private static void ProcessGetJsonCommand(GetJsonVerb options)
         {
-            //Task.Run((Action) (async () =>
-            //{
-            //})).Wait();
+            Console.Out.WriteLine("options.FilterCondition = {0}", options.FilterCondition);
+            Console.Out.WriteLine("options.OrderingCondition = {0}", options.OrderingCondition);
 
             IDCCClientWorker clientWorker = IoC.Resolve<IDCCJsonClientWorker>();
 

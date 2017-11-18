@@ -3,9 +3,13 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
+    using System.Linq.Dynamic;
     using System.Net;
     using DCCCommon;
     using DCCCommon.Conventions;
+    using DCCNodeLib;
+    using Entities;
     using NUnit.Framework;
 
     [TestFixture]
@@ -18,6 +22,29 @@
             return filePath;
         }
 
+        [Test]
+        public void DynamicLinqTest()
+        {
+            // Arrange
+            string filePath = GetStartupConfigPath();
+            string testDataSourcePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Data\Employees.xml");
+
+            Console.Out.WriteLine("testDataSourcePath = {0}", testDataSourcePath);
+
+            IEnumerable<Employee> employees = LocalStorageManager.Default.GetEmployeesFrom(testDataSourcePath);
+
+            // Act
+            employees = employees.Where("Gender == \"Female\"").ToList();
+
+            foreach (Employee employee in employees)
+            {
+                Console.Out.WriteLine("employee = {0}", employee);
+            }
+
+            
+        }
+
+
         #region Node Related Tests
 
         [TestCase(1)]
@@ -26,7 +53,6 @@
             // Arrange
             string filePath = GetStartupConfigPath();
             string testDataSourcePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Data\Employees.xml");
-            ;
 
             Console.Out.WriteLine("testDataSourcePath = {0}", testDataSourcePath);
 

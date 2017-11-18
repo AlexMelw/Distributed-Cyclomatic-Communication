@@ -45,16 +45,7 @@
             //await Console.Out.WriteLineAsync(json).ConfigureAwait(false);
 
 
-            var timer = new Timer(state =>
-            {
-                Console.Out.WriteLine("Works!!!");
-            }, null, TimeSpan.FromSeconds(5), Timeout.InfiniteTimeSpan);
-
-
-            while (true)
-            {
-                
-            }
+            
 
         }
     }

@@ -6,9 +6,11 @@
     using System.Linq;
     using System.Net;
     using System.Net.Sockets;
+    using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
     using DCCCommon;
+    using DCCCommon.Comparers;
     using DCCCommon.Conventions;
     using DCCCommon.Entities;
     using DCCCommon.Messages;
@@ -131,6 +133,9 @@
                 ProtocolType.Udp);
 
             var localEndPoint = new IPEndPoint(_localIpAddress, MulticastIPEndPoint.Port);
+
+            mCastSocket.ExclusiveAddressUse = false;
+            mCastSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 
             mCastSocket.Bind(localEndPoint);
 
@@ -332,22 +337,35 @@
 
             }
 
-            while (dataAgentRequestTasks.Count > 0)
+            //while (dataAgentRequestTasks.Count > 0)
+            //{
+            //    // Identify the first task that completes.
+            //    Task<string> firstCompletedTask = Task.WhenAny(dataAgentRequestTasks).Result;
+
+            //    // Remove the selected task from the list so that you don't 
+            //    // process it more than once.
+            //    dataAgentRequestTasks.Remove(firstCompletedTask);
+
+            //    // Await the completed task.
+            //    string xmlData = firstCompletedTask.Result;
+
+            //    var employeesContainer = xmlData.DeserializeTo<EmployeesRoot>();
+
+            //    employees.AddRange(employeesContainer.EmployeeArray);
+            //}
+
+            Task.WaitAll(dataAgentRequestTasks.ToArray());
+
+            foreach (Task<string> task in dataAgentRequestTasks)
             {
-                // Identify the first task that completes.
-                Task<string> firstCompletedTask = Task.WhenAny(dataAgentRequestTasks).Result;
+                string xmlData = task.Result;
 
-                // Remove the selected task from the list so that you don't 
-                // process it more than once.
-                dataAgentRequestTasks.Remove(firstCompletedTask);
+                EmployeesRoot root = xmlData.DeserializeTo<EmployeesRoot>();
 
-                // Await the completed task.
-                string xmlData = firstCompletedTask.Result;
-
-                var employeesContainer = xmlData.DeserializeTo<EmployeesRoot>();
-
-                employees.AddRange(employeesContainer.EmployeeArray);
+                employees.AddRange(root.EmployeeArray);
             }
+
+            employees = employees.Distinct(EmployeeIdComparer.Default).ToList();
 
 
             var dslConverter = new DSLConverter(requestDataMessage);
@@ -361,17 +379,28 @@
             // Send header (meta-data) first
 
             string header = dataToBeSent.Length.ToString();
+            Console.Out.WriteLine($"[Node ID {CurrentNodeId}] Payload to be sent [ {header} ]");
+
             byte[] binaryHeader = header.ToUtf8EncodedByteArray();
             workerSocket.Send(binaryHeader);
 
+            buffer = new byte[Common.UnicastBufferSize];
+            receivedBytes = workerSocket.Receive(buffer);
+            byte[] binaryAck = buffer.Take(receivedBytes).ToArray();
+            string ack = binaryAck.ToUtf8String();
+            Console.Out.WriteLine($"[Node ID {CurrentNodeId}] Payload acknowledgment [ {ack} ]");
+
+
             // Then send payload data
+
+            Console.Out.WriteLine($"[Node ID {CurrentNodeId}] Sending data...");
 
             IEnumerable<IEnumerable<byte>> chunks = dataToBeSent.ChunkBy(Common.UnicastBufferSize);
 
             foreach (IEnumerable<byte> chunk in chunks)
             {
                 byte[] chunkBuffer = chunk.ToArray();
-                workerSocket.Send(chunkBuffer, chunkBuffer.Length, SocketFlags.Partial);
+                workerSocket.Send(chunkBuffer, SocketFlags.Partial);
             }
 
             workerSocket.Close();

@@ -70,14 +70,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Data\Employees.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Content Include="Data\Employees.xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Data\Employees.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Include="Data\Employees.json" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

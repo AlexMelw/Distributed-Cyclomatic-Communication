@@ -123,7 +123,8 @@
             //Task<LinkedList<DiscoveryResponseMessage>> getResponseMessagesTask = ReceiveDiscoveryResponseMessagesAsync();
 
             _discoveryIsActive = true;
-            new Thread(() => ReceiveDiscoveryResponseMessages(discoveryTimeout)).Start();
+            Thread discoveryListenerThread = new Thread(() => ReceiveDiscoveryResponseMessages(discoveryTimeout));
+            discoveryListenerThread.Start();
             Thread.Sleep(500);
 
             // Discovery Init
@@ -137,6 +138,7 @@
 
             Thread.Sleep(TimeSpan.FromSeconds(discoveryTimeout));
             _discoveryIsActive = false; // Either info about all the nodes is collected or time is over.
+            discoveryListenerThread.Abort();
 
             //thread.Abort();
 

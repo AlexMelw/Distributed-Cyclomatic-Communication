@@ -37,13 +37,24 @@
 
         public IEnumerable<Employee> GetEmployeesFrom(string dataSourceFilePath)
         {
-            EmployeesRoot result;
-            using (FileStream fileStream = new FileStream(dataSourceFilePath, FileMode.Open))
+            Console.Out.WriteLine($"I'm trying to access {dataSourceFilePath}");
+
+            try
             {
-                XmlSerializer serializer = new XmlSerializer(typeof(EmployeesRoot));
-                result = (EmployeesRoot)serializer.Deserialize(fileStream);
+                EmployeesRoot result;
+                using (FileStream fileStream = new FileStream(dataSourceFilePath, FileMode.Open))
+                {
+                    XmlSerializer serializer = new XmlSerializer(typeof(EmployeesRoot));
+                    result = (EmployeesRoot)serializer.Deserialize(fileStream);
+                }
+
+                return result.EmployeeArray;
             }
-            return result.EmployeeArray;
+            catch (Exception e)
+            {
+                Console.Out.WriteLine(e);
+                return Array.Empty<Employee>();
+            }
         }
     }
 }

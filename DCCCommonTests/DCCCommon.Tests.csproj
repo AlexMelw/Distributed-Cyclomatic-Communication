@@ -40,6 +40,9 @@
       <HintPath>..\packages\NUnit.3.9.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Linq.Dynamic, Version=1.0.6132.35681, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Linq.Dynamic.1.0.7\lib\net40\System.Linq.Dynamic.dll</HintPath>
+    </Reference>
     <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.4.0\lib\net461\System.ValueTuple.dll</HintPath>
     </Reference>
@@ -63,6 +66,10 @@
     <ProjectReference Include="..\DCCCommon\DCCCommon.csproj">
       <Project>{EB231EEE-CD0B-4480-A922-E20F97CBCEDD}</Project>
       <Name>DCCCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DCCNodeLib\DCCNodeLib.csproj">
+      <Project>{21EDE020-EB9B-416B-9967-56AEA5B1EA2B}</Project>
+      <Name>DCCNodeLib</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

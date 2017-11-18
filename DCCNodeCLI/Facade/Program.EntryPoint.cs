@@ -14,7 +14,7 @@
 
         static void Main(string[] args)
         {
-            args = new[] { "-i", "6" };
+            //args = new[] { "-i", "6" };
 
             //var arguments = Parser.Default.FormatCommandLine(new NodeOptions
             //    {

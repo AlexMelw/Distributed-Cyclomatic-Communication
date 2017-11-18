@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Comparers\EmployeeIdComparer.cs" />
     <Compile Include="Conventions\Common.cs" />
     <Compile Include="DataAgent.cs" />
     <Compile Include="Entities\Employee.cs" />
