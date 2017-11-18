@@ -1,10 +1,7 @@
 ﻿namespace DCCClientCLI.Facade
 {
     using System;
-    using System.Threading;
-    using System.Threading.Tasks;
     using DCCClientLib.Interfaces;
-    using EasySharp.NHelpers.CustomExMethods;
     using Infrastructure;
     using Verbs;
 
@@ -29,7 +26,6 @@
             IDCCClientWorker clientWorker = IoC.Resolve<IDCCJsonClientWorker>();
 
             ProcessOutgoingRequest(options, clientWorker);
-
         }
     }
 }

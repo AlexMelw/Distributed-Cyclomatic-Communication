@@ -45,14 +45,12 @@
             if (discoveryIsUsed)
             {
                 ConfigureWithDiscoveryServiceSettings();
-
                 return;
             }
 
             if (proxyIsUsed)
             {
                 ConfigureWithProxyNodeSettings();
-
                 return;
             }
 
