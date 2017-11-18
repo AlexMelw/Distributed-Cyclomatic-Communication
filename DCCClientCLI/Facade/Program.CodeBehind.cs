@@ -49,6 +49,10 @@
                 Console.Out.WriteLine("An error occurred while retrieving data...");
                 Console.Out.WriteLine("Application terminated.");
             }
+            finally
+            {
+                Environment.Exit(0);
+            }
         }
     }
 }

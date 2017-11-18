@@ -14,7 +14,7 @@
 
     class Program
     {
-        static async Task Main(string[] args)
+        static void Main(string[] args)
         {
             //IEnumerable<Employee> employees =
             //    LocalStorageManager.Default.GetEmployees().Where(e => e.Id.In(10, 11, 12, 13, 14, 15));
@@ -43,10 +43,6 @@
             //string json = await interpreter.TransfromDataToRequiredFromatAsync(employees).ConfigureAwait(false);
 
             //await Console.Out.WriteLineAsync(json).ConfigureAwait(false);
-
-
-            
-
         }
     }
 }

@@ -14,6 +14,7 @@
     using DCCDiscoveryService.Messages;
     using EasySharp.NHelpers.CustomExMethods;
     using EasySharp.NHelpers.CustomWrappers.Networking;
+    using EasySharp.NHelpers.Utils.Cryptography;
     using Interfaces;
 
     public class DiscoveryBasedCommunicationMediator : ICommunicationMediator
@@ -32,8 +33,8 @@
 
         public DiscoveryBasedCommunicationMediator()
         {
-            //_discoveryResponsePort = RNGUtil.Next(30_000, 60_000);
-            _discoveryResponsePort = 36_456;
+            //_discoveryResponsePort = 36_456;
+            _discoveryResponsePort = RNGUtil.Next(30_000, 50_000);
             _discoveryResponseMessages = new ConcurrentBag<DiscoveryResponseMessage>();
         }
 
