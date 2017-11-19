@@ -42,10 +42,8 @@
 
             IPEndPoint mavenEndPoint = GetMavenEndPoint(discoveryTimeout);
 
-            var dataAgent = new DataAgent();
-
             // Retrieve data from the maven node
-            string data = dataAgent.MakeRequest(requestMessage, mavenEndPoint, "SECRET");
+            string data = new DataAgent().MakeRequest(requestMessage, mavenEndPoint, "SECRET");
 
             return data;
         }
@@ -75,7 +73,8 @@
             // Discovery Receive Response
             var discoveryResponseMessages = new List<DiscoveryResponseMessage>(_discoveryResponseMessages);
 
-            Console.Out.WriteLine($"Total nodes discovered: {discoveryResponseMessages.Count}");
+            string nL = Environment.NewLine;
+            Console.Out.WriteLine($"Total nodes discovered: {discoveryResponseMessages.Count}{nL}");
 
             // Discovery Process Response Results
             IPEndPoint mavenEndPoint = IdentifyMavenNode(discoveryResponseMessages);
@@ -109,112 +108,56 @@
 
         private void ReceiveDiscoveryResponseMessages(int discoveryTimeout)
         {
-            #region Trash
-
-            //var discoveryResponseMessages = await Task.Run(async () =>
-            //{
-
-            //}).ConfigureAwait(false);
-
-            //return discoveryResponseMessages;
-
-            //var responseHandlers = new ConcurrentBag<Task<DiscoveryResponseMessage>>();
-
-            #endregion
-
             Thread thread = new Thread(() =>
             {
-                Console.Out.WriteLine("Run the Receive Discovery Response SERVICE");
+                //Console.Out.WriteLine("Run the Receive Discovery Response SERVICE");
+                Console.Out.WriteLine($"DISCOVERY SERVICE is running [ timeout: {discoveryTimeout} sec. ]");
                 IPAddress ipAddress = Dns.GetHostAddresses(Dns.GetHostName()).FirstOrDefault();
+#if DEBUG
                 Console.Out.WriteLine($"Listening to {IPAddress.Any}:{_discoveryResponsePort}");
+#endif
 
                 var tcpListener = new TcpListenerEx(IPAddress.Any, _discoveryResponsePort);
 
                 try
                 {
                     tcpListener.Start();
+#if DEBUG
                     Console.Out.WriteLine($" [TCP] The socket is active? {tcpListener.Active}");
                     Console.WriteLine(" [TCP] The local End point is  :" + tcpListener.LocalEndpoint);
                     Console.WriteLine(" [TCP] Waiting for a connection.....\n");
+#endif
 
                     TimeSpan timeoutTimeSpan = TimeSpan.FromSeconds(discoveryTimeout);
                     DateTime listeningStartTime = DateTime.Now;
-
-                    #region Trash
-
-                    //var timer = new Timer(state =>
-                    //{
-                    //    (state as TcpListenerEx)?.Stop();
-                    //}, tcpListener,  1000*5, 1);
-
-                    //async Task EnforceTcpListeningTimeout1()
-                    //{
-                    //    await Console.Out.WriteLineAsync("Start of async timer").ConfigureAwait(false);
-                    //    await Task.Delay(TimeSpan.FromSeconds(timeoutSec)).ConfigureAwait(false);
-                    //    tcpListener1.Stop();
-                    //    await Console.Out.WriteLineAsync("Works just fine!").ConfigureAwait(false);
-                    //    await Console.Out.WriteLineAsync("").ConfigureAwait(false);
-                    //}
-
-                    //Task.Run(EnforceTcpListeningTimeout1);
-
-                    #endregion
 
                     // is serving continuously while timeout isn't reached
                     while (_discoveryIsActive
                            && DateTime.Now.Subtract(listeningStartTime) < timeoutTimeSpan)
                     {
+#if DEBUG
                         Console.Out.WriteLine("Before accepting....");
+#endif
 
                         Socket workerSoket = tcpListener.AcceptSocket();
 
-                        #region Trash
-
-                        //try
-                        //{
-                        //    tcpClient = tcpListener.AcceptTcpClient();
-                        //}
-                        //catch (Exception)
-                        //{
-                        //    await Console.Out.WriteLineAsync("Discovery procedure is terminated.")
-                        //        .ConfigureAwait(false);
-                        //    break;
-                        //}
-
-                        #endregion
-
+#if DEBUG
                         Console.WriteLine($" [TCP] Connection accepted from: {{ {workerSoket.RemoteEndPoint} }}");
                         Console.WriteLine($" [TCP] SocketWorker is bound to: {{ {workerSoket.LocalEndPoint} }}");
-
-                        #region Trash
-
-                        //TcpServerWorker.Instance
-                        //    .Init(workerTcpSocket, tcpListener)
-                        //    .StartWorking();
-
-                        //// TODO Unchecked modification
-                        //if (tcpListener.Inactive)
-                        //{
-                        //    tcpListener.Stop();
-                        //}
-
-                        //Task<DiscoveryResponseMessage> responseHandlerTask1 = Task.Run(() =>
-                        //{
-                        //    return HandleResponseAsync(tcpListener, tcpClient);
-                        //});
-
-                        //responseHandlers.AddLast(responseHandlerTask1);
-
-                        #endregion
-
+#endif
                         new Thread(() =>
                         {
+#if DEBUG
                             Console.Out.WriteLine(
                                 $"[TCP] >> SERVER WORKER IS TALKING TO {workerSoket.RemoteEndPoint}");
+#endif
 
                             if (tcpListener.Inactive)
                             {
+#if DEBUG
                                 Console.Out.WriteLine("[TCP] >> DISCOVERY LISTENER IS DOWN. Closing connection...");
+
+#endif
                                 return;
                             }
 
@@ -228,25 +171,24 @@
 
                             string xmlData = data.ToUtf8String();
 
+#if DEBUG
                             Console.Out.WriteLine(xmlData);
+#endif
 
                             DiscoveryResponseMessage responseMessage = xmlData
                                 .DeserializeTo<DiscoveryResponseMessage>();
 
+#if DEBUG
                             Console.Out.WriteLine(" [TCP]   >> DISCOVERY LISTENER has finished job");
+#endif
 
                             _discoveryResponseMessages.Add(responseMessage);
                         }).Start();
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    Console.Out.WriteLine("[TCP] Grave error occured. Searver is dead.");
-                    Console.Out.WriteLine($"e = {e.Message}");
-                    Debug.WriteLine("[TCP] Grave error occured. Searver is dead.");
-                    Debug.WriteLine($"e = {e.Message}");
-                    Console.Out.WriteLine("[TCP] PRESS ANY KEY TO QUIT");
-                    Console.ReadLine();
+                    Console.Out.WriteLine("DISCOVERY SERVICE has crashed.");
                 }
                 finally
                 {
@@ -297,9 +239,10 @@
             // The multicast group address is the same as the address used by the listener.
             var mCastOption = new MulticastOption(MulticastIPEndPoint.Address, _clientLocalIpAddress);
 
+#if DEBUG
             Console.Out.WriteLine(
                 $"Multicast socket is created for: {MulticastIPEndPoint.Address} & {_clientLocalIpAddress}");
-
+#endif
             mCastSocket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, mCastOption);
 
             return mCastSocket;

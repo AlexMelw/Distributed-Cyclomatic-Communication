@@ -47,32 +47,39 @@
 
         public string MakeRequest(RequestDataMessage requestMessage, IPEndPoint dataSourceEndPoint, string nodeId)
         {
+#if DEBUG
             Console.Out.WriteLine($"[Node ID {nodeId}] Making data request to the maven node [ {dataSourceEndPoint} ]");
-
-            // $c$ ADD THREAD OR TASK
+#endif
 
             // Establish connection to the remote node
             var tcpClient = new TcpClient();
             tcpClient.Connect(dataSourceEndPoint.Address, dataSourceEndPoint.Port);
             Socket socket = tcpClient.Client;
 
+#if DEBUG
             Console.Out.WriteLine($"[Node ID {nodeId}] Successfully connected to [ {dataSourceEndPoint} ]");
+#endif
 
             // Prepare request message to be sent
             string requestMessageXml = requestMessage.SerializeToXml();
 
+#if DEBUG
             Console.Out.WriteLine($"[Node ID {nodeId}] Sending XML request");
             Console.Out.WriteLine(requestMessageXml);
-
+#endif
             byte[] dataToBeSent = requestMessageXml.ToUtf8EncodedByteArray();
 
             // Send request message
             socket.Send(dataToBeSent);
 
+#if DEBUG
             Console.Out.WriteLine($"[Node ID {nodeId}] Message sent successfully");
+#endif
 
             // Receive meta-data response
+#if DEBUG
             Console.Out.WriteLine($"[Node ID {nodeId}] Receiving data");
+#endif
 
             byte[] buffer = new byte[Common.UnicastBufferSize];
             int bytesRead = socket.Receive(buffer);
@@ -80,6 +87,7 @@
             byte[] binaryHeader = buffer.Take(bytesRead).ToArray();
             string header = binaryHeader.ToUtf8String();
             long payloadSize = Convert.ToInt64(header);
+
             Console.Out.WriteLine($"[Node ID {nodeId}] The payload size is [ {payloadSize} ] bytes.");
 
             byte[] ackBuffer = payloadSize.ToString().ToUtf8EncodedByteArray();

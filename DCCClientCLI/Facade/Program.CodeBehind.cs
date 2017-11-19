@@ -34,7 +34,8 @@
                     }
                     else
                     {
-                        Console.Out.WriteLine($"Received {dataType} is VALID!");
+                        string nL = Environment.NewLine;
+                        Console.Out.WriteLine($"Received {dataType} is VALID!{nL}");
                     }
                 }
 
