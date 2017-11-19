@@ -15,7 +15,6 @@
         private IPEndPoint _mavenEndPoint;
         private IPAddress _localProxyIpAddress;
         private int _tcpServingPort;
-        public int ClientReceiveResponseTcpPort { get; set; }
 
         public void StartServingTcpPort()
         {

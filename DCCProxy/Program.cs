@@ -1,11 +1,6 @@
 ﻿namespace DCCProxy
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using System.Threading;
-    using DCCCommon.Comparers;
-    using DCCCommon.Entities;
 
     class Program
     {
@@ -14,9 +9,7 @@
             var proxy = new Proxy();
 
             proxy.Init();
-            proxy.StartServingTcpPort();
+            new Thread(() => proxy.StartServingTcpPort()).Start();
         }
-
-
     }
 }

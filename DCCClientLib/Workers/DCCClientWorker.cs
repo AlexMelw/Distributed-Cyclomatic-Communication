@@ -37,7 +37,7 @@
 
         public void Initialize()
         {
-            bool discoveryIsUsed = StartupConfigManager.Default.ExistsKey(Client);
+            bool discoveryIsUsed = StartupConfigManager.Default.ExistsKey(Discovery);
             bool proxyIsUsed = StartupConfigManager.Default.ExistsKey(Proxy);
 
             if (discoveryIsUsed)
