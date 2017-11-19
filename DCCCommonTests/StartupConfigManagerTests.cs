@@ -22,31 +22,6 @@
             return filePath;
         }
 
-        [Test]
-        public void DynamicLinqTest()
-        {
-            // Arrange
-            string filePath = GetStartupConfigPath();
-            string testDataSourcePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Data\Employees.xml");
-
-            Console.Out.WriteLine("testDataSourcePath = {0}", testDataSourcePath);
-
-            IEnumerable<Employee> employees = LocalStorageManager.Default.GetEmployeesFrom(testDataSourcePath);
-
-            // Act
-            employees = employees.Where("Gender == \"Female\"").ToList();
-
-            foreach (Employee employee in employees)
-            {
-                Console.Out.WriteLine("employee = {0}", employee);
-            }
-
-            
-        }
-
-
-        #region Node Related Tests
-
         [TestCase(1)]
         public void GetNodeDataSourcePathTest(int nodeId)
         {
@@ -67,23 +42,6 @@
             // Assert
             Assert.That(dataSourcePath, Is.EqualTo(testDataSourcePath));
         }
-
-        //[TestCase(1)]
-        //public void GetNodeLocalIpAddressTest(int nodeId)
-        //{
-        //    // Arrange
-        //    string filePath = GetStartupConfigPath();
-        //    var testIpAddress = IPAddress.Parse("127.0.0.1");
-
-        //    StartupConfigManagerTestEx.Default.ConfigFilePath = filePath;
-
-        //    // Act
-        //    IPAddress nodeLocalIpAddress = StartupConfigManagerTestEx.Default
-        //        .GetNodeLocalIpAddress(nodeId);
-
-        //    // Assert
-        //    Assert.That(nodeLocalIpAddress, Is.EqualTo(testIpAddress));
-        //}
 
         [TestCase(1)]
         public void GetTcpServingPortTest(int nodeId)
@@ -140,27 +98,25 @@
             Assert.That(adjacentNodesEndPoints, Is.EquivalentTo(testAdjacentNodesEndPoints));
         }
 
-        #endregion
+        [Test]
+        public void DynamicLinqTest()
+        {
+            // Arrange
+            string filePath = GetStartupConfigPath();
+            string testDataSourcePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"Data\Employees.xml");
 
+            Console.Out.WriteLine("testDataSourcePath = {0}", testDataSourcePath);
 
-        #region Client Related Tests
+            IEnumerable<Employee> employees = LocalStorageManager.Default.GetEmployeesFrom(testDataSourcePath);
 
-        //[Test]
-        //public void GetClientLocalIpAddressTest()
-        //{
-        //    // Arrange
-        //    string filePath = GetStartupConfigPath();
-        //    var testClientLocalIpAddress = IPAddress.Parse("127.0.0.1");
+            // Act
+            employees = employees.Where("Gender == \"Female\"").ToList();
 
-        //    StartupConfigManagerTestEx.Default.ConfigFilePath = filePath;
-
-        //    // Act
-        //    IPAddress clientLocalIpAddress = StartupConfigManagerTestEx.Default
-        //        .GetClientLocalIpAddress();
-
-        //    // Assert
-        //    Assert.That(clientLocalIpAddress, Is.EqualTo(testClientLocalIpAddress));
-        //}
+            foreach (Employee employee in employees)
+            {
+                Console.Out.WriteLine("employee = {0}", employee);
+            }
+        }
 
         [Test]
         public void GetDiscoveryClientResponseTcpPortTest()
@@ -258,8 +214,6 @@
             // Assert
             Assert.That(proxyConnectedNodesEndPoints, Is.EquivalentTo(testConnectedNodesEndPoints));
         }
-
-        #endregion
     }
 
     class StartupConfigManagerTestEx : StartupConfigManager
@@ -269,12 +223,16 @@
 
         public new static StartupConfigManagerTestEx Default => LazyInstance.Value;
 
-        private StartupConfigManagerTestEx() { }
-
         public new string ConfigFilePath
         {
             get => base.ConfigFilePath;
             set => base.ConfigFilePath = value;
         }
+
+        #region CONSTRUCTORS
+
+        private StartupConfigManagerTestEx() { }
+
+        #endregion
     }
 }

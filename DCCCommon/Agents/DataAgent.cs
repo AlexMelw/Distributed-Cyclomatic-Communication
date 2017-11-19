@@ -31,7 +31,6 @@
             string ack = binaryAck.ToUtf8String();
             Console.Out.WriteLine($"Payload acknowledgment: [ {ack} ] bytes.");
 
-
             // Then send payload data
 
             Console.Out.WriteLine($"Sending data...");
@@ -57,8 +56,6 @@
             tcpClient.Connect(dataSourceEndPoint.Address, dataSourceEndPoint.Port);
             Socket socket = tcpClient.Client;
 
-            //NetworkStream networkStream = tcpClient.GetStream();
-
             Console.Out.WriteLine($"[Node ID {nodeId}] Successfully connected to [ {dataSourceEndPoint} ]");
 
             // Prepare request message to be sent
@@ -69,16 +66,7 @@
 
             byte[] dataToBeSent = requestMessageXml.ToUtf8EncodedByteArray();
 
-            #region Trash
-
-            //var streamReader = new StreamReader(networkStream, Encoding.UTF8);
-            //var streamWriter = new StreamWriter(networkStream, Encoding.UTF8) { AutoFlush = true };
-            //await streamWriter.WriteAsync(requestMessageXml).ConfigureAwait(false);
-
-            #endregion
-
             // Send request message
-            //networkStream.Write(dataToBeSent, 0, dataToBeSent.Length);
             socket.Send(dataToBeSent);
 
             Console.Out.WriteLine($"[Node ID {nodeId}] Message sent successfully");
@@ -87,10 +75,8 @@
             Console.Out.WriteLine($"[Node ID {nodeId}] Receiving data");
 
             byte[] buffer = new byte[Common.UnicastBufferSize];
-            //int bytesRead = networkStream.Read(buffer, 0, Common.UnicastBufferSize);
             int bytesRead = socket.Receive(buffer);
 
-            //long payloadSize = BitConverter.ToInt64(buffer.Take(bytesRead).ToArray(), 0);
             byte[] binaryHeader = buffer.Take(bytesRead).ToArray();
             string header = binaryHeader.ToUtf8String();
             long payloadSize = Convert.ToInt64(header);
@@ -99,17 +85,8 @@
             byte[] ackBuffer = payloadSize.ToString().ToUtf8EncodedByteArray();
             socket.Send(ackBuffer);
 
-
             // Get Payload Data from maven
-            //string data = RetrieveDataPayloadFromMaven(payloadSize, networkStream, buffer);
             string data = RetrieveDataPayloadFromMaven(socket, payloadSize);
-
-            #region Trash
-
-            //streamReader.Close();
-            //streamWriter.Close();
-
-            #endregion
 
             tcpClient.Close();
 
@@ -122,8 +99,6 @@
 
             while (payloadSize > 0)
             {
-                //int bytesRead = networkStream.Read(buffer, 0, Common.UnicastBufferSize);
-
                 byte[] buffer = new byte[Common.UnicastBufferSize];
 
                 int bytesRead = socket.Receive(buffer, SocketFlags.Partial);
@@ -139,26 +114,5 @@
 
             return data;
         }
-
-        //private string RetrieveDataPayloadFromMaven(long payloadSize, NetworkStream networkStream,
-        //    byte[] buffer)
-        //{
-        //    var receivedDataChunks = new LinkedList<IEnumerable<byte>>();
-
-        //    while (payloadSize > 0)
-        //    {
-        //        int bytesRead = networkStream.Read(buffer, 0, Common.UnicastBufferSize);
-
-        //        receivedDataChunks.AddLast(buffer.Take(bytesRead));
-
-        //        payloadSize -= bytesRead;
-        //    }
-
-        //    byte[] receivedData = receivedDataChunks.SelectMany(chunk => chunk).ToArray();
-
-        //    string data = receivedData.ToUtf8String();
-
-        //    return data;
-        //}
     }
 }

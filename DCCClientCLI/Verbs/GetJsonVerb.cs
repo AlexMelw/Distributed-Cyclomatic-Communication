@@ -7,8 +7,6 @@
     [Verb("get-json", HelpText = "Retrieves json from ...")]
     class GetJsonVerb : GetVerb
     {
-        public GetJsonVerb() => DataFormat = DataFormat.Json;
-
         [Usage(ApplicationAlias = "DCCC")]
         public static IEnumerable<Example> Examples
         {
@@ -27,7 +25,8 @@
                     {
                         Timeout = 1,
                         DataType = "Employee",
-                        FilterCondition = @"Gender == ""Female"" and Salary > 3000 or (Gender == ""Male"" and Salary < 1000)",
+                        FilterCondition =
+                            @"Gender == ""Female"" and Salary > 3000 or (Gender == ""Male"" and Salary < 1000)",
                         OrderingCondition = "Id descending"
                     });
 
@@ -42,5 +41,11 @@
                     });
             }
         }
+
+        #region CONSTRUCTORS
+
+        public GetJsonVerb() => DataFormat = DataFormat.Json;
+
+        #endregion
     }
 }

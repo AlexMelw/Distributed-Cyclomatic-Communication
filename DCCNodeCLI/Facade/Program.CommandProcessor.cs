@@ -1,8 +1,6 @@
 ﻿namespace DCCNodeCLI.Facade
 {
-    using System;
     using System.Threading;
-    using System.Threading.Tasks;
     using DCCNodeLib.Interfaces;
     using Infrastructure;
     using Options;
@@ -18,7 +16,6 @@
                 nodeWorker.Init(options.Id);
 
                 nodeWorker.Start();
-
             }).Start();
         }
     }

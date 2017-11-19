@@ -6,7 +6,6 @@
     using System.Linq;
     using System.Net;
     using System.Xml.Linq;
-    using Conventions;
     using EasySharp.NHelpers.CustomExMethods;
     using Models;
     using static Conventions.Common;
@@ -17,11 +16,11 @@
 
         private static readonly Lazy<StartupConfigManager> LazyInstance =
             new Lazy<StartupConfigManager>(() => new StartupConfigManager(), true);
+
+        public static StartupConfigManager Default => LazyInstance.Value;
         //private const string ConfigFilePath = "StartupConfig.xml";
 
         protected string ConfigFilePath { get; set; }
-
-        public static StartupConfigManager Default => LazyInstance.Value;
 
         #region CONSTRUCTORS
 
@@ -106,25 +105,6 @@
 
             return connectedNodesEndPoints;
         }
-
-        //public IPAddress GetClientLocalIpAddress()
-        //{
-        //    string localIpAddressString;
-
-        //    lock (PadLock)
-        //    {
-        //        XElement root = XElement.Load(ConfigFilePath);
-
-        //        localIpAddressString = root.Element(Client)
-        //                                   ?.Element(LocalIpAddress)
-        //                                   ?.Value
-        //                               ?? string.Empty;
-        //    }
-
-        //    IPAddress.TryParse(localIpAddressString, out IPAddress localIpAddress);
-
-        //    return localIpAddress;
-        //}
 
         public int GetDiscoveryClientResponseTcpPort()
         {
@@ -294,30 +274,6 @@
 
             return dataSourcePath;
         }
-
-        //public IPAddress GetNodeLocalIpAddress(int nodeId)
-        //{
-        //    string localIpAddressString = string.Empty;
-
-        //    try
-        //    {
-        //        XElement node = GetNodeById(nodeId);
-
-        //        lock (PadLock)
-        //        {
-        //            localIpAddressString = node?.Element(LocalIpAddress)?.Value
-        //                                   ?? string.Empty;
-        //        }
-        //    }
-        //    catch (Exception)
-        //    {
-        //        // ignored
-        //    }
-
-        //    IPAddress.TryParse(localIpAddressString, out IPAddress localIpAddress);
-
-        //    return localIpAddress;
-        //}
 
         public int GetNodeTcpServingPort(int nodeId)
         {

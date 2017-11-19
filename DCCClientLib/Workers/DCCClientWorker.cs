@@ -65,14 +65,6 @@
 
         private void ConfigureWithDiscoveryServiceSettings()
         {
-            //IPAddress localIpAddress = StartupConfigManager.Default.GetClientLocalIpAddress();
-
-            //if (localIpAddress == null)
-            //{
-            //    Console.Out.WriteLine("Local IP Address is not found in the configuration file.");
-            //    Environment.Exit(1);
-            //}
-
             IPEndPoint multicastIpEndPoint = StartupConfigManager.Default.GetDiscoveryClientMulticastIPEndPoint();
 
             if (multicastIpEndPoint == null)
@@ -92,31 +84,11 @@
             CommunicationMediator = new DiscoveryBasedCommunicationMediator
             {
                 MulticastIPEndPoint = multicastIpEndPoint
-                //ClientReceiveResponseTcpPort = responseTcpPort
             };
         }
 
         private void ConfigureWithProxyNodeSettings()
         {
-            //IEnumerable<NodeInfo> nodesIDsWithAdjacentNodesNo = StartupConfigManager.Default.GetNodesIDsWithAdjacentNodesNo();
-
-            //IPAddress localIpAddress = StartupConfigManager.Default.GetClientLocalIpAddress();
-
-            //if (localIpAddress == null)
-            //{
-            //    Console.Out.WriteLine("Local IP Address is not found in the configuration file.");
-            //    Environment.Exit(1);
-            //}
-
-            //int responseTcpPort = StartupConfigManager.Default.GetDiscoveryClientResponseTcpPort();
-
-            //if (responseTcpPort == -1)
-            //{
-            //    Console.Out.WriteLine("Discovery response TCP port is not indicated within configuration file.");
-            //    Environment.Exit(1);
-            //}
-
-
             IPEndPoint proxyEndPoint = StartupConfigManager.Default.GetProxyEndPoint();
 
             if (proxyEndPoint == null)
@@ -124,7 +96,6 @@
                 Console.Out.WriteLine("Proxy IP Address and/or port are not found in the configuration file.");
                 Environment.Exit(1);
             }
-
 
             CommunicationMediator = new ProxyBasedCommunicationMediator
             {

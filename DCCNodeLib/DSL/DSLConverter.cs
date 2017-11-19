@@ -2,7 +2,6 @@
 {
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading.Tasks;
     using DCCCommon.Conventions;
     using DCCCommon.Entities;
     using DCCCommon.Messages;

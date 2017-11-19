@@ -13,10 +13,6 @@
         {
             Console.Out.WriteLine($" [TCP]   >> SERVER WORKER IS TALKING TO {workerSocket.RemoteEndPoint}");
 
-            //LinkedList<IEnumerable<byte>> receivedBinaryData = new LinkedList<IEnumerable<byte>>();
-
-            //NetworkStream networkStream = workerSoket.GetStream();
-
             byte[] buffer = new byte[Common.UnicastBufferSize];
 
             int receivedBytes = workerSocket.Receive(buffer);

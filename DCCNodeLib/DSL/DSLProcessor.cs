@@ -2,9 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Linq.Dynamic;
-    using System.Threading.Tasks;
     using DCCCommon.Entities;
     using DCCCommon.Messages;
 
@@ -12,7 +10,7 @@
     {
         private readonly string _filterCondition;
         private readonly string _orderingCondition;
-        private int _propagation;
+        private readonly int _propagation;
 
         #region CONSTRUCTORS
 
@@ -24,15 +22,6 @@
         }
 
         #endregion
-
-        //public IEnumerable<Employee> GetDataFromDataSource(string dataSourceFilePath)
-        //{
-        //    IEnumerable<Employee> data = LocalStorageManager.Default
-        //                                     .GetEmployeesFrom(dataSourceFilePath)
-        //                                 ?? Enumerable.Empty<Employee>();
-
-        //    return data;
-        //}
 
         public IEnumerable<Employee> ProcessData(IEnumerable<Employee> employees)
         {

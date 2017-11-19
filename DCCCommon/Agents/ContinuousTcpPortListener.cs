@@ -23,44 +23,12 @@
                 Console.WriteLine(" [TCP] The local End point is  :" + tcpListener.LocalEndpoint);
                 Console.WriteLine(" [TCP] Waiting for a connection.....\n");
 
-                //var timeout = TimeSpan.FromSeconds(30);
-                //DateTime listeningStartTime = DateTime.Now;
-
-                //var responseHandlers = new LinkedList<Task<DiscoveryResponseMessage>>();
-
                 while (true) // is serving continuously
                 {
-                    //if (DateTime.Now.Subtract(listeningStartTime) >= timeout)
-                    //{
-                    //    // No more accept responses from DIS nodes
-                    //    break;
-                    //}
-
                     Socket workerSoket = tcpListener.AcceptSocket();
 
                     Console.WriteLine($" [TCP] Connection accepted from: {{ {workerSoket.RemoteEndPoint} }}");
                     Console.WriteLine($" [TCP] SoketWorker is bound to: {{ {workerSoket.LocalEndPoint} }}");
-
-                    #region Trash
-
-                    //TcpServerWorker.Instance
-                    //    .Init(workerTcpSocket, tcpListener)
-                    //    .StartWorking();
-
-                    //// TODO Unchecked modification
-                    //if (tcpListener.Inactive)
-                    //{
-                    //    tcpListener.Stop();
-                    //}
-
-                    #endregion
-
-                    //Task<DiscoveryResponseMessage> responseHandlerTask = Task.Run(() =>
-                    //{
-                    //    return HandleRequestAsync(tcpListener, workerSoket);
-                    //});
-
-                    //responseHandlers.AddLast(responseHandlerTask);
 
                     new Thread(() => handleRequestAction(workerSoket)).Start();
                 }
@@ -73,8 +41,6 @@
                 Debug.WriteLine($"e = {e.Message}");
                 Console.Out.WriteLine("[TCP] PRESS ANY KEY TO QUIT");
                 Console.ReadLine();
-
-                //throw; // TODO Unchecked modification
             }
             finally
             {

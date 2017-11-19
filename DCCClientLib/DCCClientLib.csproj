@@ -42,7 +42,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Mediators\Example.cs" />
     <Compile Include="Workers\DCCClientWorker.cs" />
     <Compile Include="Workers\DCCJsonClientWorker.cs" />
     <Compile Include="Workers\DCCXmlClientWorker.cs" />

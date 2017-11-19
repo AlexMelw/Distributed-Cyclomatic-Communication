@@ -5,7 +5,6 @@
     using System.Linq;
     using System.Net;
     using System.Net.Sockets;
-    using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
     using Agents;
@@ -23,14 +22,9 @@
     {
         private IPAddress _localIpAddress;
         public int CurrentNodeId { get; set; }
-
         public string DataSourcePath { get; set; }
-
-        //public IPAddress LocalIpAddress { get; set; }
         public IPEndPoint MulticastIPEndPoint { get; set; }
-
         public int TcpServingPort { get; set; }
-        //public IEnumerable<IPEndPoint> AdjacentNodesEndPoints { get; set; }
 
         public void Start()
         {
@@ -38,10 +32,6 @@
 
             new Thread(StartListeningToMulticastPort).Start();
             new Thread(StartListeningToTcpServingPort).Start();
-
-
-            //Task tcpListenerTask = Task.Run(StartListeningToTcpServingPortAsync);
-            //Task.WaitAll(multicastListenerTask, tcpListenerTask);
         }
 
         public void Init(int nodeId)
@@ -57,17 +47,7 @@
                 Environment.Exit(1);
             }
 
-            //IPAddress localIpAddress = StartupConfigManager.Default
-            //    .GetNodeLocalIpAddress(nodeId);
-
-            //if (localIpAddress == null)
-            //{
-            //    Console.Out.WriteLine("Local IP Address is not found in the configuration file.");
-            //    Environment.Exit(1);
-            //}
-
             _localIpAddress = Dns.GetHostAddresses(Dns.GetHostName()).FirstOrDefault();
-
 
             IPEndPoint multicastIpEndPoint = StartupConfigManager.Default
                 .GetNodeMulticastIPEndPoint(nodeId);
@@ -91,7 +71,6 @@
                 .GetAdjacentNodesEndPointsWithIDs(nodeId);
 
             DataSourcePath = nodeDataSourcePath;
-            //LocalIpAddress = localIpAddress;
             MulticastIPEndPoint = multicastIpEndPoint;
             TcpServingPort = tcpServingPort;
             AdjacentNodesEndPointsWithIDs = adjacentNodesEndPointsWithIDs;
@@ -103,7 +82,6 @@
         {
             // Multicast Socket Initialization
             Socket mCastSocket = MulticastSocketInit();
-
 
             // To be put below the while loop
             //mCastSocket.Close(300);
@@ -170,7 +148,6 @@
 
             var responseMessage = new DiscoveryResponseMessage
             {
-                //IPAddress = LocalIpAddress.ToString(), // $c$ to be changed
                 IPAddress = _localIpAddress.ToString(),
                 ListeningPort = TcpServingPort,
                 NodeConnectionNum = AdjacentNodesEndPointsWithIDs.Count()
@@ -196,26 +173,6 @@
 
             #endregion
 
-            #region Trash
-
-            //while (true)
-            //{
-            //    if (tcpListener.Inactive)
-            //    {
-            //        break;
-            //    }
-            //    byte[] buffer = new byte[BufferSize];
-            //    int receivedBytes = networkStream.Read(buffer, 0, buffer.Length);
-            //    if (receivedBytes == 0)
-            //    {
-            //        Console.Out.WriteLine($@" [TCP]   >> SERVER WORKER says: ""No bytes received. Connection closed.""");
-            //        break;
-            //    }
-            //    receivedBinaryData.AddLast(buffer.Take(receivedBytes));
-            //}
-
-            #endregion
-
             #region Business Logic :: To be wrapped into DSLInterpreter
 
             var employees = Enumerable.Empty<Employee>().ToList();
@@ -226,8 +183,6 @@
                                                             .GetEmployeesFrom(DataSourcePath)
                                                         ?? Enumerable.Empty<Employee>();
 
-
-            //dslInterpreter.GetDataFromDataSource(DataSourcePath);
 
             employees.AddRange(dataFromCurrentNode);
 
@@ -283,27 +238,6 @@
                     dataAgentRequestTasks.AddLast(requestDataTask);
                 }
             }
-
-            #region Trash
-
-            //while (dataAgentRequestTasks.Count > 0)
-            //{
-            //    // Identify the first task that completes.
-            //    Task<string> firstCompletedTask = Task.WhenAny(dataAgentRequestTasks).Result;
-
-            //    // Remove the selected task from the list so that you don't 
-            //    // process it more than once.
-            //    dataAgentRequestTasks.Remove(firstCompletedTask);
-
-            //    // Await the completed task.
-            //    string xmlData = firstCompletedTask.Result;
-
-            //    var employeesContainer = xmlData.DeserializeTo<EmployeesRoot>();
-
-            //    employees.AddRange(employeesContainer.EmployeeArray);
-            //}
-
-            #endregion
 
             Task.WaitAll(dataAgentRequestTasks.Cast<Task>().ToArray()); // WARNING: $C$ IMPORTANT CHANGES
 

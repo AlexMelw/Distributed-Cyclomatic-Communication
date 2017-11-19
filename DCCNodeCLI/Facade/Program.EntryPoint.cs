@@ -14,14 +14,7 @@
 
         static void Main(string[] args)
         {
-            //args = new[] { "-i", "6" };
-
-            //var arguments = Parser.Default.FormatCommandLine(new NodeOptions
-            //    {
-            //        Id = 6
-            //    }
-            //);
-            //Console.Out.WriteLine("arguments = {0}", arguments);
+            //args = new[] { "-i", "6" }; // The 6th node is going to be run
 
             Parser.Default.ParseArguments<NodeOptions>(args).WithParsed(RunNodeWithSpecifiedId);
         }

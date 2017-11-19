@@ -1,17 +1,5 @@
 ﻿namespace XmlPlayground
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using DCCCommon.Conventions;
-    using DCCCommon.Entities;
-    using DCCCommon.Messages;
-    using DCCNodeLib;
-    using DCCNodeLib.DSL;
-    using EasySharp.NHelpers.CustomExMethods;
-
     class Program
     {
         static void Main(string[] args)

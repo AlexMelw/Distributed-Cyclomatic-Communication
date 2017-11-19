@@ -1,7 +1,6 @@
 ﻿namespace DCCClientCLI.Facade
 {
     using System;
-    using System.Threading.Tasks;
     using DCCClientLib.Interfaces;
     using Verbs;
 
@@ -32,13 +31,11 @@
                     {
                         Console.Out.WriteLine($"Received {dataType} is NOT valid!");
                         return;
-
                     }
                     else
                     {
                         Console.Out.WriteLine($"Received {dataType} is VALID!");
                     }
-
                 }
 
                 string response = clientWorker.GetResponse();
@@ -51,6 +48,7 @@
             }
             finally
             {
+                // If do not terminate App manually, then end user would have to do it by pressing ^C (CTRL+C).
                 Environment.Exit(0);
             }
         }

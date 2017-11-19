@@ -7,13 +7,10 @@
     [Verb("get-xml", HelpText = "Retrieves xml from ...")]
     class GetXmlVerb : GetVerb
     {
-        public GetXmlVerb() => DataFormat = DataFormat.Xml;
-
         [Usage(ApplicationAlias = "DCCC")]
         public static IEnumerable<Example> Examples
         {
-            get
-            {
+            get {
                 yield return new Example(
                     "Minimal scenario",
                     new GetXmlVerb
@@ -28,7 +25,8 @@
                     {
                         Timeout = 1,
                         DataType = "Employee",
-                        FilterCondition = @"Gender == ""Female"" and Salary > 3000 or (Gender == ""Male"" and Salary < 1000)",
+                        FilterCondition =
+                            @"Gender == ""Female"" and Salary > 3000 or (Gender == ""Male"" and Salary < 1000)",
                         OrderingCondition = "Id descending"
                     });
 
@@ -44,5 +42,10 @@
             }
         }
 
+        #region CONSTRUCTORS
+
+        public GetXmlVerb() => DataFormat = DataFormat.Xml;
+
+        #endregion
     }
 }
