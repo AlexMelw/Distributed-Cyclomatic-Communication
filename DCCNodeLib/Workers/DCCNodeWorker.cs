@@ -30,8 +30,8 @@
         {
             Console.Out.WriteLine($"Node with id [ {CurrentNodeId} ] is activated.");
 
-            new Thread(StartListeningToMulticastPort).Start();
-            new Thread(StartListeningToTcpServingPort).Start();
+            StartListeningToMulticastPort();
+            StartListeningToTcpServingPort();
         }
 
         public void Init(int nodeId)
@@ -80,26 +80,29 @@
 
         private void StartListeningToMulticastPort()
         {
-            // Multicast Socket Initialization
-            Socket mCastSocket = MulticastSocketInit();
-
-            // To be put below the while loop
-            //mCastSocket.Close(300);
-
-            Console.Out.WriteLine($"Start listening to {MulticastIPEndPoint}");
-
-            EndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
-            byte[] buffer = new byte[Common.MulticastBufferSize];
-
-            while (true)
+            new Thread(() =>
             {
-                Console.Out.WriteLine("Waiting for multicast packets...");
-                Console.Out.WriteLine("Enter ^C to terminate");
+                // Multicast Socket Initialization
+                Socket mCastSocket = MulticastSocketInit();
 
-                int bytesRead = mCastSocket.ReceiveFrom(buffer, ref remoteEndPoint);
+                // To be put below the while loop
+                //mCastSocket.Close(300);
 
-                ProcessMulticastMessage(buffer, bytesRead);
-            }
+                Console.Out.WriteLine($"Start listening to {MulticastIPEndPoint}");
+
+                EndPoint remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
+                byte[] buffer = new byte[Common.MulticastBufferSize];
+
+                while (true)
+                {
+                    Console.Out.WriteLine("Waiting for multicast packets...");
+                    Console.Out.WriteLine("Enter ^C to terminate");
+
+                    int bytesRead = mCastSocket.ReceiveFrom(buffer, ref remoteEndPoint);
+
+                    ProcessMulticastMessage(buffer, bytesRead);
+                }
+            }).Start();
         }
 
         private Socket MulticastSocketInit()
@@ -161,8 +164,11 @@
 
         private void StartListeningToTcpServingPort()
         {
-            var portListener = new ContinuousTcpPortListener();
-            portListener.StartListening(TcpServingPort, HandleRequest);
+            new Thread(() =>
+            {
+                var portListener = new ContinuousTcpPortListener();
+                portListener.StartListening(TcpServingPort, HandleRequest);
+            }).Start();
         }
 
         private void HandleRequest(Socket workerSocket)

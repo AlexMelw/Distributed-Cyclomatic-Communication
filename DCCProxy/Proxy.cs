@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Net;
     using System.Net.Sockets;
+    using System.Threading;
     using DCCCommon;
     using DCCCommon.Agents;
     using DCCCommon.Messages;
@@ -18,30 +19,11 @@
 
         public void StartServingTcpPort()
         {
-            #region Pattern Trash
-
-            //new Thread(() =>
-            //{
-            //    while (true)
-            //    {
-            //        // somehow accept socket
-
-            //        // then 
-            //        new Thread(() =>
-            //        {
-            //            // Retrieve data from the maven node
-            //            var dataAgent = new DataAgent();
-
-            //            // Retrieve data from the maven node
-            //            string data = dataAgent.MakeRequest(requestMessage, mavenEndPoint, mavenNodeId.ToString());
-            //        }).Start();
-            //    }
-            //}).Start();
-
-            #endregion
-
-            var portListener = new ContinuousTcpPortListener();
-            portListener.StartListening(_tcpServingPort, HandleRequest);
+            new Thread(() =>
+            {
+                var portListener = new ContinuousTcpPortListener();
+                portListener.StartListening(_tcpServingPort, HandleRequest);
+            }).Start();
         }
 
         public void Init()

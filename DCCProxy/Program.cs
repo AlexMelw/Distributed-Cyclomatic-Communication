@@ -9,7 +9,7 @@
             var proxy = new Proxy();
 
             proxy.Init();
-            new Thread(() => proxy.StartServingTcpPort()).Start();
+            proxy.StartServingTcpPort();
         }
     }
 }

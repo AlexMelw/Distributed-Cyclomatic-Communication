@@ -5,8 +5,6 @@
 
   <client>
 
-    <!--<local-ipAddress>127.0.0.1</local-ipAddress>-->
-
     <!--<discovery>
       <response-tcpPort>27001</response-tcpPort>
       <multicast-ipAddress>228.1.2.3</multicast-ipAddress>
