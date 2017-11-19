@@ -21,17 +21,19 @@
 
         public string MakeRequest(RequestDataMessage requestMessage, int discoveryTimeout)
         {
-            _clientLocalIpAddress = Dns.GetHostAddresses(Dns.GetHostName()).FirstOrDefault();
+            //_clientLocalIpAddress = Dns.GetHostAddresses(Dns.GetHostName()).FirstOrDefault();
 
-            IPEndPoint mavenEndPoint = GetMavenEndPoint();
+            //IPEndPoint mavenEndPoint = GetMavenEndPoint();
 
-            // Retrieve data from the maven node
-            var dataAgent = new DataAgent();
+            //// Retrieve data from the maven node
+            //var dataAgent = new DataAgent();
 
-            // Retrieve data from the maven node
-            string data = dataAgent.MakeRequest(requestMessage, mavenEndPoint, "SECRET");
+            //// Retrieve data from the maven node
+            //string data = dataAgent.MakeRequest(requestMessage, mavenEndPoint, "SECRET");
 
-            return data;
+            //return data;
+
+            return default; // $C$ to be reviewed
         }
 
 

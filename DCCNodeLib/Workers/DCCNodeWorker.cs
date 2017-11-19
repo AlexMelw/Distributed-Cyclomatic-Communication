@@ -217,12 +217,47 @@
 
             #endregion
 
-            #region Business Logic
-
-            var dslInterpreter = new DSLInterpreter(requestDataMessage);
+            #region Business Logic :: To be wrapped into DSLInterpreter
 
             var employees = Enumerable.Empty<Employee>().ToList();
 
+            CollectDataFromAdjacentNodesIfRequired(requestDataMessage, employees);
+
+            IEnumerable<Employee> dataFromCurrentNode = LocalStorageManager.Default
+                                                            .GetEmployeesFrom(DataSourcePath)
+                                                        ?? Enumerable.Empty<Employee>();
+
+
+            //dslInterpreter.GetDataFromDataSource(DataSourcePath);
+
+            employees.AddRange(dataFromCurrentNode);
+
+            if (requestDataMessage.Propagation > 0)
+            {
+                employees = employees.Distinct(EmployeeIdComparer.Default).ToList();
+            }
+
+
+            employees = new DSLProcessor(requestDataMessage).ProcessData(employees).ToList();
+
+            string serializedData = new DSLConverter(requestDataMessage)
+                .TransformDataToRequiredFormat(employees);
+
+            #endregion
+
+            #region Send Back Response Data
+
+            var respondent = new DataRespondent();
+            respondent.SendResponse(workerSocket, serializedData);
+
+            #endregion
+
+            workerSocket.Close();
+        }
+
+        private void CollectDataFromAdjacentNodesIfRequired(RequestDataMessage requestDataMessage,
+            List<Employee> employees)
+        {
             var dataAgentRequestTasks = new LinkedList<Task<string>>();
 
             if (AdjacentNodesEndPointsWithIDs.Any() && requestDataMessage.Propagation > 0)
@@ -282,33 +317,6 @@
 
                 employees.AddRange(root.EmployeeArray);
             }
-
-            IEnumerable<Employee> dataFromCurrentNode = dslInterpreter
-                .GetDataFromDataSource(DataSourcePath);
-
-            employees.AddRange(dataFromCurrentNode);
-
-            if (requestDataMessage.Propagation > 0)
-            {
-                employees = employees.Distinct(EmployeeIdComparer.Default).ToList();
-
-                employees = dslInterpreter.ProcessData(employees).ToList();
-            }
-
-            var dslConverter = new DSLConverter(requestDataMessage);
-
-            string serializedData = dslConverter.TransformDataToRequiredFormat(employees);
-
-            #endregion
-
-            #region Send Back Response Data
-
-            var respondent = new DataRespondent();
-            respondent.SendResponse(workerSocket, serializedData);
-
-            #endregion
-
-            workerSocket.Close();
         }
     }
 }

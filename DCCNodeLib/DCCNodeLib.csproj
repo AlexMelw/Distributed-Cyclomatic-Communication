@@ -43,7 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DSL\DSLConverter.cs" />
-    <Compile Include="DSL\DSLInterpreter.cs" />
+    <Compile Include="DSL\DSLProcessor.cs" />
     <Compile Include="Example.cs" />
     <Compile Include="LocalStorageManager.cs" />
     <Compile Include="Workers\DCCNodeWorker.cs" />

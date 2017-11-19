@@ -22,32 +22,32 @@
     {
         public void StartServingTcpPort()
         {
-            new Thread(() =>
-            {
-                while (true)
-                {
-                    // somehow accept socket
+            //new Thread(() =>
+            //{
+            //    while (true)
+            //    {
+            //        // somehow accept socket
 
-                    // then 
-                    new Thread(() =>
-                    {
-                        int max = NodeIdRangList.Max(nodeInfo => nodeInfo.AdjacentNodesNo);
+            //        // then 
+            //        new Thread(() =>
+            //        {
+            //            int max = NodeIdRangList.Max(nodeInfo => nodeInfo.AdjacentNodesNo);
 
-                        int mavenNodeId = NodeIdRangList
-                            .FirstOrDefault(nodeInfo => nodeInfo.AdjacentNodesNo == max).Id;
+            //            int mavenNodeId = NodeIdRangList
+            //                .FirstOrDefault(nodeInfo => nodeInfo.AdjacentNodesNo == max).Id;
 
-                        IPEndPoint mavenEndPoint = StartupConfigManager.Default
-                            .GetNodeIPEndPointById(mavenNodeId);
+            //            IPEndPoint mavenEndPoint = StartupConfigManager.Default
+            //                .GetNodeIPEndPointById(mavenNodeId);
 
-                        // Retrieve data from the maven node
-                        var dataAgent = new DataAgent();
+            //            // Retrieve data from the maven node
+            //            var dataAgent = new DataAgent();
 
-                        // Retrieve data from the maven node
-                        string data = dataAgent.MakeRequest(requestMessage, mavenEndPoint, mavenNodeId.ToString());
-                    }).Start();
-                }
+            //            // Retrieve data from the maven node
+            //            string data = dataAgent.MakeRequest(requestMessage, mavenEndPoint, mavenNodeId.ToString());
+            //        }).Start();
+            //    }
               
-            }).Start();
+            //}).Start();
         }
     }
 }
