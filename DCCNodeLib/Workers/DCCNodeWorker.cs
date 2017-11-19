@@ -184,7 +184,7 @@
 
         private void StartListeningToTcpServingPort()
         {
-            var portListener = new TcpPortListener();
+            var portListener = new ContinuousTcpPortListener();
             portListener.StartListening(TcpServingPort, HandleRequest);
         }
 
@@ -192,8 +192,7 @@
         {
             #region Get Request Data Message
 
-            var interceptor = new RequestInterceptor();
-            RequestDataMessage requestDataMessage = interceptor.GetRequest(workerSocket);
+            RequestDataMessage requestDataMessage = new RequestInterceptor().GetRequest(workerSocket);
 
             #endregion
 
@@ -247,8 +246,7 @@
 
             #region Send Back Response Data
 
-            var respondent = new DataRespondent();
-            respondent.SendResponse(workerSocket, serializedData);
+            new DataAgent().SendResponse(workerSocket, serializedData);
 
             #endregion
 

@@ -45,7 +45,7 @@
                     processedEmployees = employees?.Where(_filterCondition);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Console.Out.WriteLine("Error: Couldn't filter employees.");
             }
@@ -57,7 +57,7 @@
                     processedEmployees = processedEmployees?.OrderBy(_orderingCondition);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Console.Out.WriteLine("Error: Couldn't sort employees.");
             }

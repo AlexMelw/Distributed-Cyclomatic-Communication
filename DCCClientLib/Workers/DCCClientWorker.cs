@@ -1,12 +1,9 @@
 ﻿namespace DCCClientLib.Workers
 {
     using System;
-    using System.Collections.Generic;
     using System.Net;
-    using System.Threading.Tasks;
     using DCCCommon;
     using DCCCommon.Messages;
-    using DCCCommon.Models;
     using Interfaces;
     using Mediators;
     using static DCCCommon.Conventions.Common;
@@ -19,7 +16,8 @@
 
         public abstract bool ValidateResponseAgainstSchema(string schemaPath);
 
-        public void MakeRequest(string dataType, string dataFormat, string filterCondition, string orderingCondition, int discoveryTimeout)
+        public void MakeRequest(string dataType, string dataFormat, string filterCondition, string orderingCondition,
+            int discoveryTimeout)
         {
             var requestMessage = new RequestDataMessage
             {
@@ -34,8 +32,6 @@
         }
 
         public string GetResponse() => ReceivedData;
-
-        //public void Dispose() => CommunicationMediator.Dispose();
 
         #region Client Worker Initialization
 
@@ -58,10 +54,12 @@
 
             Console.Out.WriteLine("Cannot operate without a proper startup configuration. " +
                                   "Neither discovery service was configured, nor proxy.");
-            
+
 
             Environment.Exit(1);
         }
+
+        #endregion
 
         #region Client Worker Configuration
 
@@ -100,6 +98,8 @@
 
         private void ConfigureWithProxyNodeSettings()
         {
+            //IEnumerable<NodeInfo> nodesIDsWithAdjacentNodesNo = StartupConfigManager.Default.GetNodesIDsWithAdjacentNodesNo();
+
             //IPAddress localIpAddress = StartupConfigManager.Default.GetClientLocalIpAddress();
 
             //if (localIpAddress == null)
@@ -108,13 +108,14 @@
             //    Environment.Exit(1);
             //}
 
-            int responseTcpPort = StartupConfigManager.Default.GetDiscoveryClientResponseTcpPort();
+            //int responseTcpPort = StartupConfigManager.Default.GetDiscoveryClientResponseTcpPort();
 
-            if (responseTcpPort == -1)
-            {
-                Console.Out.WriteLine("Discovery response TCP port is not indicated within configuration file.");
-                Environment.Exit(1);
-            }
+            //if (responseTcpPort == -1)
+            //{
+            //    Console.Out.WriteLine("Discovery response TCP port is not indicated within configuration file.");
+            //    Environment.Exit(1);
+            //}
+
 
             IPEndPoint proxyEndPoint = StartupConfigManager.Default.GetProxyEndPoint();
 
@@ -124,25 +125,12 @@
                 Environment.Exit(1);
             }
 
-            IEnumerable<NodeInfo> nodesIDsWithAdjacentNodesNo = StartupConfigManager.Default.GetNodesIDsWithAdjacentNodesNo();
 
             CommunicationMediator = new ProxyBasedCommunicationMediator
             {
-                ClientReceiveResponseTcpPort = responseTcpPort,
-                ProxyEndPoint = proxyEndPoint,
-                NodeIdRangList = nodesIDsWithAdjacentNodesNo
+                ProxyEndPoint = proxyEndPoint
             };
         }
-
-        #endregion
-
-        #endregion
-
-        #region Not Used Properties
-
-        //public IPAddress LocalIpAddress { get; set; }
-        //public int ResponseTcpPort { get; set; }
-        //public IPEndPoint MulticastIPEndPoint { get; set; }
 
         #endregion
     }

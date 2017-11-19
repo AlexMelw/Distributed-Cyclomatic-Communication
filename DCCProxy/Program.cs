@@ -1,10 +1,11 @@
 ﻿namespace DCCProxy
 {
     using System;
-    using System.Net;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
-    using DCCCommon;
-    using DCCCommon.Agents;
+    using DCCCommon.Comparers;
+    using DCCCommon.Entities;
 
     class Program
     {
@@ -12,42 +13,10 @@
         {
             var proxy = new Proxy();
 
+            proxy.Init();
             proxy.StartServingTcpPort();
         }
 
 
-    }
-
-    class Proxy
-    {
-        public void StartServingTcpPort()
-        {
-            //new Thread(() =>
-            //{
-            //    while (true)
-            //    {
-            //        // somehow accept socket
-
-            //        // then 
-            //        new Thread(() =>
-            //        {
-            //            int max = NodeIdRangList.Max(nodeInfo => nodeInfo.AdjacentNodesNo);
-
-            //            int mavenNodeId = NodeIdRangList
-            //                .FirstOrDefault(nodeInfo => nodeInfo.AdjacentNodesNo == max).Id;
-
-            //            IPEndPoint mavenEndPoint = StartupConfigManager.Default
-            //                .GetNodeIPEndPointById(mavenNodeId);
-
-            //            // Retrieve data from the maven node
-            //            var dataAgent = new DataAgent();
-
-            //            // Retrieve data from the maven node
-            //            string data = dataAgent.MakeRequest(requestMessage, mavenEndPoint, mavenNodeId.ToString());
-            //        }).Start();
-            //    }
-              
-            //}).Start();
-        }
     }
 }

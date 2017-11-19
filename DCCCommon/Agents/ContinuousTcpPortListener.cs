@@ -7,7 +7,7 @@
     using System.Threading;
     using EasySharp.NHelpers.CustomWrappers.Networking;
 
-    public class TcpPortListener
+    public class ContinuousTcpPortListener
     {
         public void StartListening(int tcpServingPort, Action<Socket> handleRequestAction)
         {
