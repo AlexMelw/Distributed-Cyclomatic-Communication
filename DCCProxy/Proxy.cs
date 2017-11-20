@@ -10,6 +10,8 @@
     using DCCCommon.Agents;
     using DCCCommon.Messages;
     using DCCCommon.Models;
+    using EasySharp.NHelpers.Utils;
+    using EasySharp.NHelpers.Utils.Cryptography;
 
     class Proxy
     {
@@ -76,8 +78,23 @@
         {
             int max = nodeIdRangList.Max(nodeInfo => nodeInfo.AdjacentNodesNo);
 
-            int mavenNodeId = nodeIdRangList
-                .FirstOrDefault(nodeInfo => nodeInfo.AdjacentNodesNo == max).Id;
+            // Not good (no entropy).
+            //int mavenNodeId = nodeIdRangList
+            //    .FirstOrDefault(nodeInfo => nodeInfo.AdjacentNodesNo == max).Id;
+
+            // Enforce entropy
+            List<int> suitableCandidates = nodeIdRangList.Where(nodeInfo => nodeInfo.AdjacentNodesNo == max)
+                .Select(nodeInfo => nodeInfo.Id)
+                .ToList();
+
+            if (!suitableCandidates.Any())
+            {
+                return default;
+            }
+
+            int randomIndex = RandUtil.Default.Next(suitableCandidates.Count);
+
+            int mavenNodeId = suitableCandidates[randomIndex];
 
             IPEndPoint mavenEndPoint = StartupConfigManager.Default
                 .GetNodeIPEndPointById(mavenNodeId);

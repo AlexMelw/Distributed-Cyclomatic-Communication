@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -30,6 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Proxy.ico</ApplicationIcon>
@@ -53,6 +55,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\EasySharp\NHelpers\NHelpers.csproj">
+      <Project>{CAC83CF1-E5D4-45F6-85CC-E0AD29B55A8E}</Project>
+      <Name>NHelpers</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DCCCommon\DCCCommon.csproj">
       <Project>{EB231EEE-CD0B-4480-A922-E20F97CBCEDD}</Project>
       <Name>DCCCommon</Name>
