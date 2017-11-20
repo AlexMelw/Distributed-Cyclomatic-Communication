@@ -41,7 +41,7 @@
 
             try
             {
-                if (_propagation == 0 && !string.IsNullOrWhiteSpace(_orderingCondition))
+                if (_propagation > 0 && !string.IsNullOrWhiteSpace(_orderingCondition))
                 {
                     processedEmployees = processedEmployees?.OrderBy(_orderingCondition);
                 }

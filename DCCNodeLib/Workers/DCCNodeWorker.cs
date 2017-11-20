@@ -181,9 +181,7 @@
 
             #region Business Logic :: To be wrapped into DSLInterpreter
 
-            var employees = Enumerable.Empty<Employee>().ToList();
-
-            CollectDataFromAdjacentNodesIfRequired(requestDataMessage, employees);
+            CollectDataFromAdjacentNodesIfRequired(requestDataMessage, out var employees);
 
             IEnumerable<Employee> dataFromCurrentNode = LocalStorageManager.Default
                                                             .GetEmployeesFrom(DataSourcePath)
@@ -215,7 +213,7 @@
         }
 
         private void CollectDataFromAdjacentNodesIfRequired(RequestDataMessage requestDataMessage,
-            List<Employee> employees)
+            out List<Employee> employees)
         {
             var dataAgentRequestTasks = new LinkedList<Task<string>>();
 
@@ -246,6 +244,8 @@
             }
 
             Task.WaitAll(dataAgentRequestTasks.Cast<Task>().ToArray()); // WARNING: $C$ IMPORTANT CHANGES
+
+            employees = Enumerable.Empty<Employee>().ToList();
 
             foreach (Task<string> task in dataAgentRequestTasks)
             {
